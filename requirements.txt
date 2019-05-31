@@ -7,4 +7,4 @@ sqlalchemy
 pandas
 matplotlib
 numpy
-scipy
+scipy==1.2
