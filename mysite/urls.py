@@ -25,5 +25,5 @@ import json
 
 urlpatterns = [
     url('admin/', admin.site.urls),
-    url(r'^', include('macroModelsTool.urls', namespace='macroModelsTool'))
+    url(r'^', include(('macroModelsTool.urls','macroModelsTool'), namespace='macroModelsTool'))
 ]
