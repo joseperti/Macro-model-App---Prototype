@@ -1,0 +1,10 @@
+django
+gunicorn
+django-heroku
+statsmodels
+PyMySQL
+sqlalchemy
+pandas
+urllib
+matplotlib
+numpy
