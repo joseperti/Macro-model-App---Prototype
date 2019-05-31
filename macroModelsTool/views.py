@@ -272,10 +272,10 @@ def uploadLGDfile(request):
             print("okey! - It's an excel file")
             with open('LGD Data.xlsx', 'wb+') as destination:
                  for chunk in (request.FILES['LGDDependent']).chunks():
-                     destination.write(chunk)
+                    destination.write(chunk)
         else:
             print("Error - It's not an excel file (.xlsx)")
-    return HttpResponseRedirect('dependent')
+    return HttpResponseRedirect('dependent') # Corrected
 
 @login_required(login_url='/login')
 def uploadBasefile(request):
