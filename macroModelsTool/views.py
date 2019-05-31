@@ -260,7 +260,7 @@ def uploadPDfile(request):
                      destination.write(chunk)
         else:
             print("Error - It's not an excel file (.xlsx)")
-	return HttpResponseRedirect('dependent')
+    return HttpResponseRedirect('dependent') #Correceted
 
 @login_required(login_url='/login')
 def uploadLGDfile(request):
