@@ -5,6 +5,5 @@ statsmodels
 PyMySQL
 sqlalchemy
 pandas
-urllib
 matplotlib
 numpy
