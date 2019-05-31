@@ -1,0 +1,74 @@
+
+{% extends 'back2.html' %}
+{% load static %}
+{% block content %}
+<style>
+	.mainContent{
+		position: fixed;
+		top: 102px;
+		left: 250px;
+		width: 70%;
+	}
+	
+	.mainContent .conntentTitle{
+		background-color: rgba(0,26,72,1);
+		color: white;
+		padding: 2px;
+		width: 100%;
+		padding-left: 20px;
+	}
+	
+	.contentBody{
+		padding: 10px;
+	}
+	
+	.bodyElement{
+		margin-top: 20px;
+		max-width: 100%;
+		max-height: 450px;
+		width: 100%;
+		overflow-y: scroll;
+	}
+
+	.fas{
+		color: rgba(0,26,72,1);
+	}
+	
+</style>
+<script>
+	function changeStatus(target, portfolio){
+		$(target).removeClass("fa-sign-in-alt");
+		$(target).addClass("fa-circle-notch fa-spin");
+		console.log("Executing Ajax rquest");
+		$.ajax({
+		        url: 'ajax/executePortfolio/',
+		        data: {
+		          'portfolio': portfolio,
+		        },
+		        dataType: 'json',
+		        success: function (data) {
+		        	console.log(data);
+		        }
+		      });
+	}
+</script>
+<div class="mainContent">
+	<div class="conntentTitle">
+		Execution
+	</div>
+	<div class="contentBody">
+		<div class="bodyElement scrollbar style-7" id="targetDiv">
+			<table>
+				{% for i,status in portfolios %}
+				<tr>
+					<td><a href="#">
+				          <i class="fas fa-sign-in-alt" onclick="changeStatus(this,'{{ i }}')"></i>
+				        </a>{{ i }} ({{ status }})
+					</td>
+				</tr>
+				{% endfor %}
+			</table>
+		</div>
+	</div>
+</div>
+{% endblock %}

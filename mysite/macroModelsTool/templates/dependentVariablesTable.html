@@ -1,0 +1,83 @@
+
+{% extends 'back2.html' %}
+{% load static %}
+{% block content %}
+<style>
+	.mainContent{
+		position: fixed;
+		top: 102px;
+		left: 250px;
+		width: 70%;
+	}
+	
+	.mainContent .conntentTitle{
+		background-color: rgba(0,26,72,1);
+		color: white;
+		padding: 2px;
+		width: 100%;
+		padding-left: 20px;
+	}
+	
+	.contentBody{
+		padding: 10px;
+	}
+	
+	.bodyElement{
+		margin-top: 20px;
+		max-width: 50%;
+	}
+	
+</style>
+
+<div class="mainContent">
+	<div class="conntentTitle">
+		Dependent variables
+	</div>
+	<div class="contentBody">
+		{% if existsPdExcel == True %}
+		<div class="bodyElement">
+			<a href="PDData"> PD Data <img width=30 src="{% static 'Excel-Icon.png' %}"/></a>
+		</div>
+		{% else %}
+		<div class="bodyElement">
+			PD Data <img width=30 style="filter: grayscale(100%);" src="{% static 'Excel-Icon.png' %}"/>
+		</div>
+		{% endif %}
+		<div class="bodyElement">
+		<form method="POST" action="/uploadPDfile" enctype="multipart/form-data">{% csrf_token %}
+		<div class="input-group">
+		  <div class="input-group-prepend">
+			<input type=submit class="input-group-text" id="inputGroupFileAddon01" value="Upload"/>
+		  </div>
+		  <div class="custom-file">
+			<input type="file" accept=".xlsx" class="custom-file-input" name="PDDependent" id="inputGroupFile01" aria-describedby="inputGroupFileAddon01" onchange="updateNameFile(this,$('#PDInputName'))">
+			<label class="custom-file-label" for="inputGroupFile01" id="PDInputName">Choose file</label>
+		  </div>
+		</div>
+		</form>
+		</div>
+		{% if existsLGDExcel == True %}
+		<div class="bodyElement">
+			<a href="LGDData"> LGD Data <img width=30 src="{% static 'Excel-Icon.png' %}"/></a>
+		</div>
+		{% else %}
+		<div class="bodyElement">
+			LGD Data <img width=30 style="filter: grayscale(100%);" src="{% static 'Excel-Icon.png' %}"/>
+		</div>
+		{% endif %}
+		<div class="bodyElement">
+		<form method="POST" action="/uploadLGDfile" enctype="multipart/form-data">{% csrf_token %}
+		<div class="input-group">
+		  <div class="input-group-prepend">
+			<input type=submit class="input-group-text" id="inputGroupFileAddon01" value="Upload"/>
+		  </div>
+		 <div class="custom-file">
+			<input type="file" accept=".xlsx" class="custom-file-input" name="LGDDependent" id="inputGroupFile01" aria-describedby="inputGroupFileAddon01" onchange="updateNameFile(this,$('#LGDInputName'))">
+			<label class="custom-file-label" for="inputGroupFile01" id="LGDInputName">Choose file</label>
+		  </div>
+		</div>
+		</form>
+		</div>
+	</div>
+</div>
+{% endblock %}

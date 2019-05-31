@@ -1,0 +1,382 @@
+{% load static %}
+<html>
+<head>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+<style>
+	body{
+		<!-- background-image: linear-gradient(rgba(0,26,72,1) 90%, rgba(0,26,72,0.2) 150%); -->
+	}
+
+	.logo1{
+		position:fixed;
+		display: block;
+		width: 120px;
+		padding: 20px
+	}
+	
+	.menu{
+		position: fixed;
+		left: 20px;
+		top: 100px;
+		z-index:1;
+	}
+	
+	.option, .option a, .option2, .option2 a{
+		width: 100%;
+		background-color: white;
+		padding: 2px;
+		padding-left: 10px;
+		cursor: pointer;
+		color: rgba(0,26,72,1);
+		text-decoration: none;
+	}
+	
+	.option a{
+		padding-left: 0px;
+	}
+
+	.sub-option{
+		padding-left: 20px;
+	}
+	
+	.option:hover a, .option:hover, .option2:hover a, .option2:hover{
+		background-color: rgba(0,26,72,1);
+		color: white;
+		text-decoration: none;
+	}
+	
+	.no-option:hover{
+		background-color: white;
+		color: rgba(0,26,72,1);
+	}
+	.no-option{
+		cursor: default;
+	}
+	
+	.hideButton, .hideButton2, .hideButton3{
+		color: white;
+		width: 200px;
+		cursor: pointer;
+		background-color: rgba(0,26,72,1);
+		border-style: solid;
+		padding: 2px;
+		padding-left: 20px;	
+	}
+	
+	.superiorBar{
+		background-color: rgba(0,26,72,1);
+		width: 100%;
+		height:80px;
+	}
+	
+	.btn-group{
+		color: rgba(0,26,72,1);
+	}
+	
+	/*
+	 *  STYLE 7
+	 */
+
+	.style-7::-webkit-scrollbar-track
+	{
+		-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+		background-color: #F5F5F5;
+		border-radius: 10px;
+	}
+
+	.style-7::-webkit-scrollbar
+	{
+		width: 10px;
+		background-color: #F5F5F5;
+	}
+
+	.style-7::-webkit-scrollbar-thumb
+	{
+		border-radius: 10px;
+		background-image: -webkit-gradient(linear,
+	   left bottom,
+	   left top,
+	   color-stop(0.44, rgba(200,200,200,1)),
+	   color-stop(0.86, rgba(0,26,72,0.3)));
+	}
+
+</style>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+<script>
+
+function hideMenu(){
+	var instruction = $('.hideButton').text();
+	if (instruction == '-'){
+		$('.option').hide();
+		$('.hideButton').text("+")
+	}else{
+		$('.hideButton').text("-");
+		$('.option').show();
+	}
+	
+}
+
+function hideMenu2(){
+	var instruction = $('.hideButton2').text();
+	if (instruction == '-'){
+		$('.option2').hide();
+		$('.hideButton2').text("+")
+	}else{
+		$('.hideButton2').text("-");
+		$('.option2').show();
+	}
+	
+}
+
+function changeValue(target, newValue){
+	var lengthString = newValue.length;
+	var maxChars = 15;
+	target.attr("chosen",newValue);
+	if (lengthString>maxChars){
+		newValue = newValue.substring(0, maxChars)+"...";
+	}
+	target.text(newValue);
+	
+}
+
+function refreshTable(){
+	console.log("Executing Ajax rquest")
+	$.ajax({
+	        url: 'ajax/refreshTable/',
+	        data: {
+	          'group1': $("#group1").attr("chosen"),
+	          'group2': $("#group2").attr("chosen"),
+	          'group3': $("#group3").attr("chosen")
+	        },
+	        dataType: 'json',
+	        success: function (data) {
+	        	$("#targetDiv").html(data["data"]);
+	        }
+	      });
+}
+
+function updateNameFile(nameImport,target){
+	var filename = nameImport.value.split('\\').pop();
+	//console.log(nameImport.value);
+	target.text(filename);
+}
+
+function chartModel(targetModel){
+	console.log(targetModel);
+	$(".loading_symbol").show();
+	$(".bodyElement").hide();
+	$(".chartModel").show();
+	$("#chartData").show();
+	$(".chartModel").html('<canvas id="line-chart"></canvas>');
+	console.log("Executing Ajax rquest");
+	$.ajax({
+	        url: 'ajax/modelProjection/',
+	        data: {
+	        	"firstGroup":targetModel.getAttribute("firstGroup")
+				,"secondGroup":targetModel.getAttribute("secondGroup")
+				,"thirdGroup":targetModel.getAttribute("thirdGroup")
+				,"lag_1Ini":targetModel.getAttribute("lag_1Ini")
+				,"lag_1Fin":targetModel.getAttribute("lag_1Fin")
+				,"lag_2Ini":targetModel.getAttribute("lag_2Ini")
+				,"lag_2Fin":targetModel.getAttribute("lag_2Fin")
+				,"lag_3Ini":targetModel.getAttribute("lag_3Ini")
+				,"lag_3Fin":targetModel.getAttribute("lag_3Fin")
+	        },
+	        dataType: 'json',
+	        success: function (data) {
+	        	// console.log("Process Finalized");
+	        	// console.log(data["statistics"]);
+	        	$("#chartData1").html(data["statistics"]);
+	        	$("#chartData2").html(data["coefficients"]);
+	        	//$("#chartData").html(data["data"]);
+	        	new Chart(document.getElementById("line-chart"), {
+						  type: 'line',
+						  data: {
+						  	labels:data["labels"],
+						    datasets: [{ 
+						        data: data["Base"],
+						        label: "Base",
+						        borderColor: "rgb(9,79,164)",
+						        fill: false
+						      },
+						      { 
+						        data: data["Base1"],
+						        label: "Base1 (Worst)",
+						        borderColor: "rgb(0,0,0)",
+						        fill: false
+						      },
+						      { 
+						        data: data["Base3"],
+						        label: "Base3 (Best)",
+						        borderColor: "rgb(247,137,59)",
+						        fill: false
+						      }
+						    ]
+						  },
+						  options: {
+						    title: {
+						      display: true,
+						      text: 'Scenarios'
+						    },
+						    elements: { point: { radius: 1 } }
+						    ,						  
+						    pan: {
+						      enabled: true,
+						      mode: 'x',
+						   }
+						  }
+
+						});
+	        	$(".loading_symbol").hide();
+	        }
+	      });
+}
+
+</script>
+</head>
+<body>
+<img class="logo1" src="{% static 'logo2.gif' %}">
+<div class="superiorBar"/>
+<div class="menu">
+	<table>
+		<tr>
+		<td class="option2 no-option">
+			<div class="btn-group dropup">
+			  <button type="button"  title="Press to reset" id="context" onclick="changeValue( $('#context'), 'Context')" class="btn btn-light" chosen="Context">
+				Context
+			  </button>
+			  <button type="button" class="btn btn-light dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				<span class="sr-only">Toggle Dropright</span>
+			  </button>
+			  <div class="dropdown-menu pre-scrollable">
+				<!-- Dropdown menu links -->
+				<span class="dropdown-item" onclick="changeValue( $('#context'), 'IFRS9 - 2019')">IFRS9 - 2019</span>
+			  </div>
+			</div>
+		</td>
+	</tr>	
+	<tr>
+	<td class="hideButton" onclick="hideMenu()">-</td>
+	</tr>
+	<tr>
+	<td class="option"><a href="portfoliosModels">Portfolios</a></td>
+	</tr>
+	<tr>
+	<td class="option no-option">Input Variables</td>
+	</tr>
+	<tr>
+	<td class="option sub-option">
+		<a href="dependent">Dependent</a>
+	</td>
+	</tr>
+	<tr>
+	<td class="option sub-option"><a href="independent">Independent</a></td>
+	</tr>
+	<tr>
+	<td class="option no-option">Estimation</td>
+	</tr>
+	<tr>
+	<td class="option sub-option"><a href="execution">Execution</a></td>
+	</tr>
+	<tr>
+	<td class="option sub-option"><a href="findModel">Find Model</a></td>
+	</tr>
+	<tr>
+	<td class="option sub-option"><a href="execution">Filtering</a></td>
+	</tr>
+	<tr>
+	<td class="option"><a href="optionModels">Options Models</a></td>
+	</tr>
+	{% if findModelEnabled == True %}
+	<tr>
+		<td class="hideButton2" onclick="hideMenu2()">-</td>
+	</tr>
+	<tr>
+		<td class="option2 no-option">
+			<div class="btn-group dropup">
+			  <button type="button"  title="Press to reset" id="group1" onclick="changeValue( $('#group1'), 'Group 1')" class="btn btn-light" chosen="Group 1">
+				Group 1
+			  </button>
+			  <button type="button" class="btn btn-light dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				<span class="sr-only">Toggle Dropright</span>
+			  </button>
+			  <div class="dropdown-menu pre-scrollable">
+				<!-- Dropdown menu links -->
+				{% for i in options1 %}
+				<span class="dropdown-item" onclick="changeValue( $('#group1'),'{{ i }}')">{{ i }}</span>
+				{% endfor %}
+			  </div>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<td class="option2 no-option">
+			<div class="btn-group dropup">
+			  <button type="button" title="Press to reset" id="group2" onclick="changeValue( $('#group2'), 'Group 2')" class="btn btn-light"  chosen="Group 2">
+				Group 2
+			  </button>
+			  <button type="button" class="btn btn-light dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				<span class="sr-only">Toggle Dropright</span>
+			  </button>
+			  <div class="dropdown-menu pre-scrollable">
+				<!-- Dropdown menu links -->
+				{% for i in options2 %}
+				<span class="dropdown-item" onclick="changeValue( $('#group2'),'{{ i }}')">{{ i }}</span>
+				{% endfor %}
+			  </div>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<td class="option2 no-option">
+			<div class="btn-group dropup">
+			  <button type="button" title="Press to reset" id="group3" onclick="changeValue( $('#group3'), 'Group 3')" class="btn btn-light"  chosen="Group 3">
+				Group 3
+			  </button>
+			  <button type="button" class="btn btn-light dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				<span class="sr-only">Toggle Dropright</span>
+			  </button>
+			  <div class="dropdown-menu pre-scrollable">
+				<!-- Dropdown menu links -->
+				{% for i in options3 %}
+				<span class="dropdown-item" onclick="changeValue( $('#group3'),'{{ i }}')">{{ i }}</span>
+				{% endfor %}
+			  </div>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<td class="option2 no-option">
+			<div class="btn-group dropup">
+			  <button type="button" title="Press to reset" id="portfolios" onclick="changeValue( $('#portfolios'), 'Portfolio')" class="btn btn-light" chosen="Portfolio">
+				Portfolio
+			  </button>
+			  <button type="button" class="btn btn-light dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				<span class="sr-only">Toggle Dropright</span>
+			  </button>
+			  <div class="dropdown-menu pre-scrollable">
+				<!-- Dropdown menu links -->
+				{% for i in portfolios %}
+				<span class="dropdown-item" onclick="changeValue( $('#portfolios'),'{{ i }}')">{{ i }}</span>
+				{% endfor %}
+			  </div>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<td class="option sub-option" onclick="refreshTable()">
+			Search
+		</td>
+	</tr>
+	{% endif %}
+	</table>
+</div>
+{% block content %}
+{% endblock %}
+</body>
+</html>

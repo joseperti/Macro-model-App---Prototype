@@ -1,0 +1,155 @@
+
+{% extends 'back2.html' %}
+{% load static %}
+{% block content %}
+<style>
+	.mainContent{
+		position: fixed;
+		top: 102px;
+		left: 250px;
+		width: 70%;
+	}
+	
+	.mainContent .conntentTitle{
+		background-color: rgba(0,26,72,1);
+		color: white;
+		padding: 2px;
+		width: 100%;
+		padding-left: 20px;
+	}
+	
+	.contentBody{
+		padding: 10px;
+		max-height: 400px;
+		overflow-y: scroll;
+	}
+	
+	.bodyElement{
+		margin-top: 20px;
+		max-width: 50%;
+	}
+
+</style>
+<div class="mainContent">
+	<div class="conntentTitle">
+		Independent variables
+	</div>
+	<div class="contentBody scrollbar style-7">
+		<!-- Base -->
+		{% if existsBaseExcel == True %}
+		<div class="bodyElement">
+			<a href="BaseData"> Base (Baseline) Data <img width=30 src="{% static 'Excel-Icon.png' %}"/></a>
+		</div>
+		{% else %}
+		<div class="bodyElement">
+			Base (Baseline) Data <img width=30 style="filter: grayscale(100%);" src="{% static 'Excel-Icon.png' %}"/>
+		</div>
+		{% endif %}
+		<div class="bodyElement">
+		<form method="POST" action="/uploadBasefile" enctype="multipart/form-data">{% csrf_token %}
+		<div class="input-group">
+		  <div class="input-group-prepend">
+			<input type=submit class="input-group-text" id="inputGroupFileAddon01" value="Upload"/>
+		  </div>
+		  <div class="custom-file">
+			<input type="file" accept=".xlsx" class="custom-file-input" name="BaseIndependent" id="inputGroupFile01" aria-describedby="inputGroupFileAddon01" onchange="updateNameFile(this,$('#BaseInputName'))">
+			<label class="custom-file-label" for="inputGroupFile01" id="BaseInputName">Choose file</label>
+		  </div>
+		</div>
+		</form>
+		</div>
+	<!-- Base 1 -->
+		{% if existsBase1Excel == True %}
+		<div class="bodyElement">
+			<a href="Base1Data"> Base 1 (Best) Data <img width=30 src="{% static 'Excel-Icon.png' %}"/></a>
+		</div>
+		{% else %}
+		<div class="bodyElement">
+			Base 1 (Best) Data <img width=30 style="filter: grayscale(100%);" src="{% static 'Excel-Icon.png' %}"/>
+		</div>
+		{% endif %}
+		<div class="bodyElement">
+		<form method="POST" action="/uploadBase1file" enctype="multipart/form-data">{% csrf_token %}
+		<div class="input-group">
+		  <div class="input-group-prepend">
+			<input type=submit class="input-group-text" id="inputGroupFileAddon01" value="Upload"/>
+		  </div>
+		  <div class="custom-file">
+			<input type="file" accept=".xlsx" class="custom-file-input" name="Base1Independent" id="inputGroupFile01" aria-describedby="inputGroupFileAddon01" onchange="updateNameFile(this,$('#Base1InputName'))">
+			<label class="custom-file-label" for="inputGroupFile01" id="Base1InputName">Choose file</label>
+		  </div>
+		</div>
+		</form>
+		</div>
+		<!-- Base 2 -->
+		{% if existsBase2Excel == True %}
+		<div class="bodyElement">
+			<a href="Base2Data"> Base 2 (Pseudo-Base) Data <img width=30 src="{% static 'Excel-Icon.png' %}"/></a>
+		</div>
+		{% else %}
+		<div class="bodyElement">
+			Base 2 (Pseudo-Base) Data <img width=30 style="filter: grayscale(100%);" src="{% static 'Excel-Icon.png' %}"/>
+		</div>
+		{% endif %}
+		<div class="bodyElement">
+		<form method="POST" action="/uploadBase2file" enctype="multipart/form-data">{% csrf_token %}
+		<div class="input-group">
+		  <div class="input-group-prepend">
+			<input type=submit class="input-group-text" id="inputGroupFileAddon01" value="Upload"/>
+		  </div>
+		  <div class="custom-file">
+			<input type="file" accept=".xlsx" class="custom-file-input" name="Base2Independent" id="inputGroupFile01" aria-describedby="inputGroupFileAddon01" onchange="updateNameFile(this,$('#Base2InputName'))">
+			<label class="custom-file-label" for="inputGroupFile01" id="Base2InputName">Choose file</label>
+		  </div>
+		</div>
+		</form>
+		</div>
+		<!-- Base 3 -->
+		{% if existsBase3Excel == True %}
+		<div class="bodyElement">
+			<a href="Base3Data"> Base 3 (Worst) Data <img width=30 src="{% static 'Excel-Icon.png' %}"/></a>
+		</div>
+		{% else %}
+		<div class="bodyElement">
+			Base 3 (Worst) Data <img width=30 style="filter: grayscale(100%);" src="{% static 'Excel-Icon.png' %}"/>
+		</div>
+		{% endif %}
+		<div class="bodyElement">
+		<form method="POST" action="/uploadBase3file" enctype="multipart/form-data">{% csrf_token %}
+		<div class="input-group">
+		  <div class="input-group-prepend">
+			<input type=submit class="input-group-text" id="inputGroupFileAddon01" value="Upload"/>
+		  </div>
+		  <div class="custom-file">
+			<input type="file" accept=".xlsx" class="custom-file-input" name="Base3Independent" id="inputGroupFile01" aria-describedby="inputGroupFileAddon01" onchange="updateNameFile(this,$('#Base3InputName'))">
+			<label class="custom-file-label" for="inputGroupFile01" id="Base3InputName">Choose file</label>
+		  </div>
+		</div>
+		</form>
+		</div>
+		<!-- SAS (Severely Adverse Scenario) -->
+		{% if existsSASExcel == True %}
+		<div class="bodyElement">
+			<a href="SASData"> SAS (Severely Adverse Scenario) Data <img width=30 src="{% static 'Excel-Icon.png' %}"/></a>
+		</div>
+		{% else %}
+		<div class="bodyElement">
+			SAS (Severely Adverse Scenario) Data <img width=30 style="filter: grayscale(100%);" src="{% static 'Excel-Icon.png' %}"/>
+		</div>
+		{% endif %}
+		<div class="bodyElement">
+		<form method="POST" action="/uploadSASfile" enctype="multipart/form-data">{% csrf_token %}
+		<div class="input-group">
+		  <div class="input-group-prepend">
+			<input type=submit class="input-group-text" id="inputGroupFileAddon01" value="Upload"/>
+		  </div>
+		  <div class="custom-file">
+			<input type="file" accept=".xlsx" class="custom-file-input" name="SASIndependent" id="inputGroupFile01" aria-describedby="inputGroupFileAddon01" onchange="updateNameFile(this,$('#SASInputName'))">
+			<label class="custom-file-label" for="inputGroupFile01" id="SASInputName">Choose file</label>
+		  </div>
+		</div>
+		</form>
+		</div>
+	</div>
+</div>
+{% endblock %}

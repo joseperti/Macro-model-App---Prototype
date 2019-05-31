@@ -1,0 +1,70 @@
+
+{% extends 'back2.html' %}
+{% load static %}
+{% block content %}
+<style>
+	.mainContent{
+		position: fixed;
+		top: 102px;
+		left: 250px;
+		width: 70%;
+	}
+	
+	.mainContent .conntentTitle{
+		background-color: rgba(0,26,72,1);
+		color: white;
+		padding: 2px;
+		width: 100%;
+		padding-left: 20px;
+	}
+	
+	.contentBody{
+		padding: 10px;
+	}
+	
+	.bodyElement{
+		margin-top: 20px;
+		max-width: 100%;
+		max-height: 400px;
+		width: 100%;
+		overflow-y: scroll;
+	}
+	
+	.bodyElement table{
+		text-align: center;
+	}
+	
+	.bodyElement table th{
+		text-align: center;
+		padding-left: 5px;
+		padding-right: 5px;
+		color: white;
+		background-color: rgba(221,221,221,1);
+	}
+	
+	.bodyElement table td{
+		padding-left: 5px;
+		padding-right: 5px;
+	}
+	
+</style>
+<script type="text/javascript">
+	
+</script>
+<div class="mainContent">
+	<div class="conntentTitle">
+		Models
+	</div>
+	<div class="contentBody">
+		<div class="bodyElement scrollbar-light-blue" id="targetDiv">
+		{{ data | safe }}
+		</div>
+		<div class="bodyElement">
+		{{ data | safe }}
+		</div>
+	</div>
+	<div class="graphic">
+		
+	</div>
+</div>
+{% endblock %}

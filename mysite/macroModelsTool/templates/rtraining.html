@@ -1,0 +1,105 @@
+{% load static %}
+<html>
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <style type="text/css">
+        
+        .player-status{
+            width: 200px;
+            height: 200px;
+            background-color: white;
+        }
+
+        .on{
+            background-color: rgba(23,76,170,0.4);
+        }
+
+        .loadingImage{
+            position: absolute;
+            left: 50%;
+            margin-left: -120px;
+            top: 30%;
+        }
+
+    </style>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript">
+        
+        var currentPlayer = 1;
+
+        function createPlayer(name){
+            $("#player"+currentPlayer).text(name);
+            $("#player"+currentPlayer).addClass("on");
+            currentPlayer++;
+        }
+
+        function refreshPlayer(){
+            $.post( "getNewPlayer/", function( data ) {
+                
+                console.log(data);
+
+                // if (data!="-") {
+                //     createPlayer(data);
+                // }
+                // setTimeout(refreshPlayer, 500);
+            });
+        }
+
+        // refreshPlayer();
+
+    </script>
+</head>
+<body>
+<center>
+<h1>R-training</h1>
+<img class="loadingImage" src="download.gif">
+<table>
+    <tr>
+        <td class="player-status" id="player1">
+            
+        </td>
+        <td class="player-status" id="player2">
+            
+        </td>
+        <td class="player-status" id="player3">
+            
+        </td>
+        <td class="player-status" id="player4">
+            
+        </td>
+    </tr>
+     <tr>
+        <td class="player-status" id="player5">
+            
+        </td>
+        <td class="player-status" id="player6">
+            
+        </td>
+        <td class="player-status" id="player7">
+            
+        </td>
+        <td class="player-status" id="player8">
+            
+        </td>
+    </tr>
+    <tr>
+        <td class="player-status" id="player9">
+            
+        </td>
+        <td class="player-status" id="player10">
+            
+        </td>
+        <td class="player-status" id="player11">
+            
+        </td>
+        <td class="player-status" id="player12">
+            
+        </td>
+    </tr>
+</table>
+</center>
+</body>
+</html>

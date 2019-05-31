@@ -1,0 +1,105 @@
+
+{% extends 'back2.html' %}
+{% load static %}
+{% block content %}
+<style>
+
+	html{
+		-webkit-font-smoothing: antialiased;
+	}
+	.mainContent{
+		position: fixed;
+		top: 102px;
+		left: 250px;
+		width: 70%;
+	}
+	
+	.mainContent .conntentTitle{
+		background-color: rgba(0,26,72,1);
+		color: white;
+		padding: 2px;
+		width: 100%;
+		padding-left: 20px;
+	}
+	
+	.contentBody{
+		padding: 10px;
+	}
+	
+	.bodyElement{
+		margin-top: 20px;
+		max-width: 100%;
+		max-height: 600px;
+		width: 100%;
+		overflow-y: scroll;
+	}
+	
+	.bodyElement table{
+		text-align: center;
+	}
+	
+	.bodyElement table th{
+		text-align: center;
+		padding-left: 5px;
+		padding-right: 5px;
+		color: white;
+		background-color: rgba(221,221,221,1);
+	}
+	
+	.bodyElement table td{
+		padding-left: 5px;
+		padding-right: 5px;
+	}
+
+	#line-chart{
+		width: 400px;
+		height: 200px;
+	}
+
+	#chartData{
+		overflow-y: hidden;
+	}
+
+	#chartData{
+		vertical-align: top;
+	}
+	
+</style>
+<script type="text/javascript">
+	
+	function showModelOptions(){
+		$(".loading_symbol").show();
+		$(".chartModel").hide();
+		$("#chartData").hide();
+		$("#targetDiv").show();
+		$(".loading_symbol").hide();
+	}
+
+</script>
+<div class="mainContent">
+	<div class="conntentTitle" style="cursor: pointer;" onclick="showModelOptions()">
+		Models
+	</div>
+	<div class="contentBody">
+		<i class="fas fa-circle-notch fa-spin loading_symbol"></i>
+		<div class="bodyElement scrollbar style-7 scrollOption" id="targetDiv">
+		{{ data | safe }}
+		</div>
+		<div class="chartModel" id="" >
+						<canvas id="line-chart"></canvas>
+						<script>
+						$(".chartModel").hide();
+						$(".loading_symbol").hide();
+						</script>
+		</div>
+		<div class="bodyElement" id="chartData">
+			<table>
+				<tr>
+					<td id="chartData1"></td>
+					<td id="chartData2"></td>
+				</tr>
+			</table>
+		</div>
+	</div>
+</div>
+{% endblock %}

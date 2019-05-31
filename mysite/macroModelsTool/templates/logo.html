@@ -1,0 +1,80 @@
+<html>
+<style>
+
+	html{
+		background-color:white;
+		background-image: linear-gradient(rgba(0,26,72,1) 90%, rgba(0,26,72,0.2) 150%);
+	}
+
+	.logo1{
+		position:absolute;
+		vertical-align:center;
+		display: block;
+		top: 40px;
+		left: 60px;
+		width: 100px;
+		background-color: rgba(0,26,72,1);
+		padding: 20px
+	}
+
+	.block1{
+		width: 100%;
+		
+		text-align: center;
+	}
+
+#loading {
+		-webkit-animation: rotation 4s infinite linear;
+}
+
+#loading2 {
+		-webkit-animation: rotation2 3s infinite linear;
+}
+
+@-webkit-keyframes rotation {
+		from {
+				-webkit-transform: rotate(0deg);
+		}
+		to {
+				-webkit-transform: rotate(359deg);
+		}
+}
+
+@-webkit-keyframes rotation2 {
+		from {
+				-webkit-transform: rotate(359deg);
+		}
+		to {
+				-webkit-transform: rotate(0deg);
+		}
+}
+
+.under
+{
+	display: block;
+	position:absolute;
+	left: 90px;
+	top: 25px;
+	z-index: -1;
+	height: 150px;
+	vertical-align:center;
+}
+.over
+{
+
+	<!-- position:absolute; -->
+	<!-- position:absolute;
+	left:0px;
+	top:0px; -->
+}
+	
+</style>
+<body>
+<div>
+	<img class="logo1" class="over" src="logo2.gif">
+	<img id="loading" class="under" src="giro1.png">
+	<img id="loading2" class="under" src="giro2.png">
+	
+</div>
+</body>
+</html>
