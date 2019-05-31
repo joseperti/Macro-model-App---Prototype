@@ -119,4 +119,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/macroModelsTool/static/'
-STATIC_ROOT = '/macroModelsTool/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static_cdn', 'static_url')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'static_cdn', 'media_root')
