@@ -28,5 +28,6 @@ urlpatterns = [
 	url('findModel', views.findModel),
 	url('ajax/refreshTable/', views.refreshTable),
 	url('ajax/modelProjection/', views.modelProjection),
-	url('ajax/executePortfolio/', views.executePortfolio)
+	url('ajax/executePortfolio/', views.executePortfolio),
+	url('ajax/setCurrentContext/', views.setCurrentContext)
 ]

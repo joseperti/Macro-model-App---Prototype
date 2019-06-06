@@ -78,6 +78,7 @@ class Persistencia:
         return self.contextList
 
     def setContextSession(self, chosenContext, request):
+        print("Setting context %s" %(chosenContext))
         if chosenContext in self.contextList:
             request.session["context"] = chosenContext
         return None
@@ -180,11 +181,10 @@ def index(request):
     # return HttpResponse(template.render({}, request))
     return portal(request)
 
-def chooseContext(request):
-    if request.method == 'POST':
-        chosenContext = request.POST.get("context",None)
-        mainPersistence.setContextSession(chosenContext, request)
-    return HttpResponseRedirect('Ok') #Correceted
+def setCurrentContext(request):
+    chosenContext = request.GET.get("context",None)
+    mainPersistence.setContextSession(chosenContext, request)
+    return HttpResponse('Ok') #Correceted
 
 @login_required(login_url='/login')
 def portal(request):
@@ -192,16 +192,18 @@ def portal(request):
 	
 @login_required(login_url='/login')
 def dependentVariables(request):
-    documentos = os.listdir('.')
+    documentos = os.listdir('./Contexts/%s' %(mainPersistence.getContextSession(request)))
     template = loader.get_template('dependentVariablesTable.html')
     print(documentos)
     existsPdExcel = ("PD Data.xlsx" in documentos)
     existsLGDExcel = ("LGD Data.xlsx" in documentos)
-    return HttpResponse(template.render({'existsPdExcel':existsPdExcel,'existsLGDExcel':existsLGDExcel}.update(mainPersistence.getSessionInfo(request)),request))
+    responseInfo = {'existsPdExcel':existsPdExcel,'existsLGDExcel':existsLGDExcel}
+    responseInfo.update(mainPersistence.getSessionInfo(request))
+    return HttpResponse(template.render(responseInfo,request))
 	
 @login_required(login_url='/login')
 def independentVariables(request):
-    documentos = os.listdir('.')
+    documentos = os.listdir('./Contexts/%s' %(mainPersistence.getContextSession(request)))
     template = loader.get_template('independentVariablesTable.html')
     print(documentos)
     existsBaseExcel = ("Base Data.xlsx" in documentos)
@@ -209,16 +211,18 @@ def independentVariables(request):
     existsBase2Excel = ("Base2 Data.xlsx" in documentos)
     existsBase3Excel = ("Base3 Data.xlsx" in documentos)
     existsSASExcel = ("SAS Data.xlsx" in documentos)
-    return HttpResponse(template.render({'existsBaseExcel':existsBaseExcel,
+    responseInfo = {'existsBaseExcel':existsBaseExcel,
                                         'existsBase1Excel':existsBase1Excel,
                                         'existsBase2Excel':existsBase2Excel,
                                         'existsBase3Excel':existsBase3Excel,
-                                        'existsSASExcel':existsSASExcel}.update(mainPersistence.getSessionInfo(request)),
+                                        'existsSASExcel':existsSASExcel}
+    responseInfo.update(mainPersistence.getSessionInfo(request))
+    return HttpResponse(template.render(responseInfo,
                         request))
 
 @login_required(login_url='/login')
 def downloadPDData(request):
-    with open('PD Data.xlsx', 'rb') as archivo:
+    with open('./Contexts/%s' %(mainPersistence.getContextSession(request))+'/PD Data.xlsx', 'rb') as archivo:
         response = HttpResponse(archivo.read())
         response['content_type'] = 'application/xlsx'
         response['Content-Disposition'] = 'attachment;filename=PD Data.xlsx'
@@ -227,7 +231,7 @@ def downloadPDData(request):
 
 @login_required(login_url='/login')
 def downloadLGDData(request):
-    with open('LGD Data.xlsx', 'rb') as archivo:
+    with open('./Contexts/%s' %(mainPersistence.getContextSession(request))+'/LGD Data.xlsx', 'rb') as archivo:
         response = HttpResponse(archivo.read())
         response['content_type'] = 'application/xlsx'
         response['Content-Disposition'] = 'attachment;filename=LGD Data.xlsx'
@@ -236,7 +240,7 @@ def downloadLGDData(request):
 
 @login_required(login_url='/login')
 def downloadBaseData(request):
-    with open('Base Data.xlsx', 'rb') as archivo:
+    with open('./Contexts/%s' %(mainPersistence.getContextSession(request))+'/Base Data.xlsx', 'rb') as archivo:
         response = HttpResponse(archivo.read())
         response['content_type'] = 'application/xlsx'
         response['Content-Disposition'] = 'attachment;filename=Base Data.xlsx'
@@ -245,7 +249,7 @@ def downloadBaseData(request):
 
 @login_required(login_url='/login')
 def downloadBase1Data(request):
-    with open('Base1 Data.xlsx', 'rb') as archivo:
+    with open('./Contexts/%s' %(mainPersistence.getContextSession(request))+'/Base1 Data.xlsx', 'rb') as archivo:
         response = HttpResponse(archivo.read())
         response['content_type'] = 'application/xlsx'
         response['Content-Disposition'] = 'attachment;filename=Base1 (Best) Data.xlsx'
@@ -254,7 +258,7 @@ def downloadBase1Data(request):
 
 @login_required(login_url='/login')
 def downloadBase2Data(request):
-    with open('Base2 Data.xlsx', 'rb') as archivo:
+    with open('./Contexts/%s' %(mainPersistence.getContextSession(request))+'/Base2 Data.xlsx', 'rb') as archivo:
         response = HttpResponse(archivo.read())
         response['content_type'] = 'application/xlsx'
         response['Content-Disposition'] = 'attachment;filename=Base2 (Pseudo-Base) Data.xlsx'
@@ -263,7 +267,7 @@ def downloadBase2Data(request):
 
 @login_required(login_url='/login')
 def downloadBase3Data(request):
-    with open('Base3 Data.xlsx', 'rb') as archivo:
+    with open('./Contexts/%s' %(mainPersistence.getContextSession(request))+'/Base3 Data.xlsx', 'rb') as archivo:
         response = HttpResponse(archivo.read())
         response['content_type'] = 'application/xlsx'
         response['Content-Disposition'] = 'attachment;filename=Base3 (Worst) Data.xlsx'
@@ -272,7 +276,7 @@ def downloadBase3Data(request):
 
 @login_required(login_url='/login')
 def downloadSASData(request):
-    with open('SAS Data.xlsx', 'rb') as archivo:
+    with open('./Contexts/%s' %(mainPersistence.getContextSession(request))+'/SAS Data.xlsx', 'rb') as archivo:
         response = HttpResponse(archivo.read())
         response['content_type'] = 'application/xlsx'
         response['Content-Disposition'] = 'attachment;filename=SAS (Severely Adverse) Data.xlsx'
@@ -287,7 +291,7 @@ def uploadPDfile(request):
         name, extension = fileName.split(".")
         if extension == 'xlsx':
             print("okey! - It's an excel file")
-            with open('PD Data.xlsx', 'wb+') as destination:
+            with open('./Contexts/%s' %(mainPersistence.getContextSession(request))+'/PD Data.xlsx', 'wb+') as destination:
                  for chunk in (request.FILES['PDDependent']).chunks():
                      destination.write(chunk)
         else:
@@ -302,7 +306,7 @@ def uploadLGDfile(request):
         name, extension = fileName.split(".")
         if extension == 'xlsx':
             print("okey! - It's an excel file")
-            with open('LGD Data.xlsx', 'wb+') as destination:
+            with open('./Contexts/%s' %(mainPersistence.getContextSession(request))+'/LGD Data.xlsx', 'wb+') as destination:
                  for chunk in (request.FILES['LGDDependent']).chunks():
                     destination.write(chunk)
         else:
@@ -317,7 +321,7 @@ def uploadBasefile(request):
         name, extension = fileName.split(".")
         if extension == 'xlsx':
             print("okey! - It's an excel file")
-            with open('Base Data.xlsx', 'wb+') as destination:
+            with open('./Contexts/%s' %(mainPersistence.getContextSession(request))+'/Base Data.xlsx', 'wb+') as destination:
                  for chunk in (request.FILES['BaseIndependent']).chunks():
                      destination.write(chunk)
         else:
@@ -332,7 +336,7 @@ def uploadBase1file(request):
         name, extension = fileName.split(".")
         if extension == 'xlsx':
             print("okey! - It's an excel file")
-            with open('Base1 Data.xlsx', 'wb+') as destination:
+            with open('./Contexts/%s' %(mainPersistence.getContextSession(request))+'/Base1 Data.xlsx', 'wb+') as destination:
                  for chunk in (request.FILES['Base1Independent']).chunks():
                      destination.write(chunk)
         else:
@@ -347,7 +351,7 @@ def uploadBase2file(request):
         name, extension = fileName.split(".")
         if extension == 'xlsx':
             print("okey! - It's an excel file")
-            with open('Base2 Data.xlsx', 'wb+') as destination:
+            with open('./Contexts/%s' %(mainPersistence.getContextSession(request))+'/Base2 Data.xlsx', 'wb+') as destination:
                  for chunk in (request.FILES['Base2Independent']).chunks():
                      destination.write(chunk)
         else:
@@ -362,7 +366,7 @@ def uploadBase3file(request):
         name, extension = fileName.split(".")
         if extension == 'xlsx':
             print("okey! - It's an excel file")
-            with open('Base3 Data.xlsx', 'wb+') as destination:
+            with open('./Contexts/%s' %(mainPersistence.getContextSession(request))+'/Base3 Data.xlsx', 'wb+') as destination:
                  for chunk in (request.FILES['Base3Independent']).chunks():
                      destination.write(chunk)
         else:
@@ -377,7 +381,7 @@ def uploadSASfile(request):
         name, extension = fileName.split(".")
         if extension == 'xlsx':
             print("okey! - It's an excel file")
-            with open('SAS Data.xlsx', 'wb+') as destination:
+            with open('./Contexts/%s' %(mainPersistence.getContextSession(request))+'/SAS Data.xlsx', 'wb+') as destination:
                  for chunk in (request.FILES['SASIndependent']).chunks():
                      destination.write(chunk)
         else:
@@ -388,17 +392,20 @@ def uploadSASfile(request):
 def portfoliosModels(request):
     salida = pd.read_sql("select * from %stablaOpciones order by Portfolio, Parameter, Transformation, Differences, AR" %(schema),con)
     template = loader.get_template('portfoliosOptions.html')
-    return HttpResponse(template.render({'data':salida[["Portfolio","Parameter","Transformation","Differences","AR"]].to_html()}.update(mainPersistence.getSessionInfo(request)),request))
+    responseInfo = {'data':salida[["Portfolio","Parameter","Transformation","Differences","AR"]].to_html()}
+    responseInfo.update(mainPersistence.getSessionInfo(request))
+    return HttpResponse(template.render(responseInfo,request))
 	
 @login_required(login_url='/login')
 def findModel(request):
     salida = pd.read_sql('select distinct `First Group`, `Second Group`, `Third Group` from %stablaModelos' %(schema),con)
     template = loader.get_template('portfoliosOptions.html')
-    return HttpResponse(template.render({'data':salida.to_html(),'options1':mainPersistence.getOptions1(),
+    responseInfo = {'data':salida.to_html(),'options1':mainPersistence.getOptions1(),
                                                                 'options2':mainPersistence.getOptions2(),
                                                                 'options3':mainPersistence.getOptions3(),
-                                                                'portfolios':mainPersistence.getPortfolios(),'findModelEnabled':True}.update(mainPersistence.getSessionInfo(request))
-                                                                ,request))
+                                                                'portfolios':mainPersistence.getPortfolios(),'findModelEnabled':True}
+    responseInfo.update(mainPersistence.getSessionInfo(request))
+    return HttpResponse(template.render(responseInfo,request))
 
 @login_required(login_url='/login')
 def refreshTable(request):
@@ -454,8 +461,9 @@ def refreshTable(request):
 
 @login_required(login_url='/login')
 def execution(request):
-    
-    return render(request, 'execution.html', {'portfolios':mainPersistence.getPortfoliosSatus()}.update(mainPersistence.getSessionInfo(request)))
+    responseInfo = {'portfolios':mainPersistence.getPortfoliosSatus()}
+    responseInfo.update(mainPersistence.getSessionInfo(request))
+    return render(request, 'execution.html', responseInfo)
 
 @login_required(login_url='/login')
 def executePortfolio(request):

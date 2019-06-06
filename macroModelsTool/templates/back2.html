@@ -144,6 +144,22 @@ function changeValue(target, newValue){
 	
 }
 
+function setCurrentContext(target, newValue){
+	changeValue(target, newValue);
+	console.log("Executing Ajax request");
+	$.ajax({
+	        url: 'ajax/setCurrentContext/',
+	        data: {
+	          'context': newValue
+	        },
+	        dataType: 'text',
+	        success: function (data) {
+	        	console.log(data);
+	        	location.reload(true);
+	        }
+	      });
+}
+
 function refreshTable(){
 	console.log("Executing Ajax rquest")
 	$.ajax({
@@ -257,7 +273,7 @@ function chartModel(targetModel){
 			  <div class="dropdown-menu pre-scrollable">
 				<!-- Dropdown menu links -->
 				{% for i in context %}
-				<span class="dropdown-item" onclick="changeValue( $('#context'),'{{ i }}')">{{ i }}</span>
+				<span class="dropdown-item" onclick="setCurrentContext( $('#context'),'{{ i }}')">{{ i }}</span>
 				{% endfor %}
 			  </div>
 			</div>
