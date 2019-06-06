@@ -77,6 +77,7 @@ class Persistencia:
         self.loadContexts()
 
     def loadContexts(self):
+        print("Loading Contexts")
         output1 = pd.read_sql("select context_name from %scontextlist order by context_name" %(schema),con)
         self.contextList = list(output1["context_name"].values)
         print(self.contextList)
@@ -109,6 +110,7 @@ class Persistencia:
         self.optionsPortfolio = output1[["Portfolio"]].values
         self.optionsPortfolio = list(set([k[0].encode("ascii") if k[0]!=None else k[0] for k in self.optionsPortfolio]))
         self.optionsPortfolio.sort()
+        return None
 
     def getOptions1(self):
         return self.options1
@@ -118,6 +120,7 @@ class Persistencia:
         return self.options3
     '''We are trying to obtain into a class all the needed information for queries/time consuming purposes'''
     def availablePortfolios(self):
+        print("Loading available Portfolios")
         output1 = pd.read_sql("select masterkey from %stablaOpciones order by masterkey" %(schema),con)
         self.portfolios = list(output1["masterkey"].values)
         # update [MIR_WS].[dbo].[tablaOpciones]
@@ -134,6 +137,7 @@ class Persistencia:
         return self.portfolios
 
     def loadScenarios(self):
+        print("Loading Scenarios")
         self.scenarios = {}
         self.scenarios["Historic"] = pd.read_excel('PD Data.xlsx', index_col=0, sheet_name="Vars")
         self.scenarios["Base1"] = pd.read_excel('Base1 Data.xlsx', index_col=0, sheet_name="Vars")
