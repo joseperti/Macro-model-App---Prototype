@@ -247,8 +247,9 @@ function chartModel(targetModel){
 		<tr>
 		<td class="option2 no-option">
 			<div class="btn-group dropup">
-			  <button type="button"  title="Press to reset" id="context" onclick="changeValue( $('#context'), 'Context')" class="btn btn-light" chosen="Context">
-				Context
+			  <button type="button"  title="Press to reset" id="context" onclick="changeValue( $('#context'), 
+			  '{{ currentContext }}')" class="btn btn-light" chosen="{{ currentContext }}">
+				{{ currentContext }}
 			  </button>
 			  <button type="button" class="btn btn-light dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 				<span class="sr-only">Toggle Dropright</span>

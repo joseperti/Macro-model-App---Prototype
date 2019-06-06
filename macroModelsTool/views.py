@@ -60,14 +60,6 @@ def loginAccess(request):
     template = loader.get_template('login.html')
     return HttpResponse(template.render({},request))
 
-def parallelize_dataframe(df, func):
-    parts = np.array_split(df, num_partitions)
-    pool = Pool(num_cores)
-    df = pd.concat(pool.map(func, parts))
-    pool.close()
-    pool.join()
-    return df
-
 class Persistencia:
     def __init__(self,connection=None):
         self.con = connection
@@ -84,6 +76,21 @@ class Persistencia:
 
     def getContext(self):
         return self.contextList
+
+    def setContextSession(self, chosenContext, request):
+        if chosenContext in self.contextList:
+            request.session["context"] = chosenContext
+        return None
+
+    def getContextSession(self, request):
+        try:
+            return request.session["context"]
+        except:
+            if len(self.contextList) > 0:
+                request.session["context"] = self.contextList[0]
+            else:
+                request.session["context"] = "Demo"
+            return self.getContextSession(request)
 
     def loadVarsOptions(self):
         print("Loading Options")
@@ -147,6 +154,12 @@ class Persistencia:
     def getScenario(self,scenario=""):
         return self.scenarios[scenario]
 
+    def getSessionInfo(self, request):
+        info = dict()
+        info["currentContext"] = self.getContextSession(request)
+        info["context"] = self.getContext()
+        return info
+
 #params = urllib.quote_plus('DRIVER={SQL Server};SERVER=localhost;DATABASE=MIR_WS;UID=sa;PWD=Cocoliso0)')
 #engine = create_engine("mssql+pyodbc:///?odbc_connect=%s" % params)
 #engine = create_engine('postgresql://bbomylezseqnuw:01a5f33037351e96dc0faca6a674e69042dd1a765d29b7b770063663eac85ebe@ec2-184-72-237-95.compute-1.amazonaws.com:5432/d6setjiqb9p7kn')
@@ -166,7 +179,13 @@ def index(request):
     # template = loader.get_template('list.html')
     # return HttpResponse(template.render({}, request))
     return portal(request)
-	
+
+def chooseContext(request):
+    if request.method == 'POST':
+        chosenContext = request.POST.get("context",None)
+        mainPersistence.setContextSession(chosenContext, request)
+    return HttpResponseRedirect('Ok') #Correceted
+
 @login_required(login_url='/login')
 def portal(request):
     return portfoliosModels(request)
@@ -178,7 +197,7 @@ def dependentVariables(request):
     print(documentos)
     existsPdExcel = ("PD Data.xlsx" in documentos)
     existsLGDExcel = ("LGD Data.xlsx" in documentos)
-    return HttpResponse(template.render({'existsPdExcel':existsPdExcel,'existsLGDExcel':existsLGDExcel, 'context':mainPersistence.getContext()},request))
+    return HttpResponse(template.render({'existsPdExcel':existsPdExcel,'existsLGDExcel':existsLGDExcel}.update(mainPersistence.getSessionInfo(request)),request))
 	
 @login_required(login_url='/login')
 def independentVariables(request):
@@ -194,8 +213,7 @@ def independentVariables(request):
                                         'existsBase1Excel':existsBase1Excel,
                                         'existsBase2Excel':existsBase2Excel,
                                         'existsBase3Excel':existsBase3Excel,
-                                        'existsSASExcel':existsSASExcel,
-                                        'context':mainPersistence.getContext()},
+                                        'existsSASExcel':existsSASExcel}.update(mainPersistence.getSessionInfo(request)),
                         request))
 
 @login_required(login_url='/login')
@@ -370,7 +388,7 @@ def uploadSASfile(request):
 def portfoliosModels(request):
     salida = pd.read_sql("select * from %stablaOpciones order by Portfolio, Parameter, Transformation, Differences, AR" %(schema),con)
     template = loader.get_template('portfoliosOptions.html')
-    return HttpResponse(template.render({'data':salida[["Portfolio","Parameter","Transformation","Differences","AR"]].to_html(), 'context':mainPersistence.getContext()},request))
+    return HttpResponse(template.render({'data':salida[["Portfolio","Parameter","Transformation","Differences","AR"]].to_html()}.update(mainPersistence.getSessionInfo(request)),request))
 	
 @login_required(login_url='/login')
 def findModel(request):
@@ -379,8 +397,8 @@ def findModel(request):
     return HttpResponse(template.render({'data':salida.to_html(),'options1':mainPersistence.getOptions1(),
                                                                 'options2':mainPersistence.getOptions2(),
                                                                 'options3':mainPersistence.getOptions3(),
-                                                                'portfolios':mainPersistence.getPortfolios(),'findModelEnabled':True,
-                                                                'context':mainPersistence.getContext()},request))
+                                                                'portfolios':mainPersistence.getPortfolios(),'findModelEnabled':True}.update(mainPersistence.getSessionInfo(request))
+                                                                ,request))
 
 @login_required(login_url='/login')
 def refreshTable(request):
@@ -437,7 +455,7 @@ def refreshTable(request):
 @login_required(login_url='/login')
 def execution(request):
     
-    return render(request, 'execution.html', {'portfolios':mainPersistence.getPortfoliosSatus(), 'context':mainPersistence.getContext()})
+    return render(request, 'execution.html', {'portfolios':mainPersistence.getPortfoliosSatus()}.update(mainPersistence.getSessionInfo(request)))
 
 @login_required(login_url='/login')
 def executePortfolio(request):
