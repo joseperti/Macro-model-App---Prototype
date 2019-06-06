@@ -178,7 +178,7 @@ def dependentVariables(request):
     print(documentos)
     existsPdExcel = ("PD Data.xlsx" in documentos)
     existsLGDExcel = ("LGD Data.xlsx" in documentos)
-    return HttpResponse(template.render({'existsPdExcel':existsPdExcel,'existsLGDExcel':existsLGDExcel},request))
+    return HttpResponse(template.render({'existsPdExcel':existsPdExcel,'existsLGDExcel':existsLGDExcel, 'context':mainPersistence.getContext()},request))
 	
 @login_required(login_url='/login')
 def independentVariables(request):
@@ -194,7 +194,8 @@ def independentVariables(request):
                                         'existsBase1Excel':existsBase1Excel,
                                         'existsBase2Excel':existsBase2Excel,
                                         'existsBase3Excel':existsBase3Excel,
-                                        'existsSASExcel':existsSASExcel},
+                                        'existsSASExcel':existsSASExcel,
+                                        'context':mainPersistence.getContext()},
                         request))
 
 @login_required(login_url='/login')
@@ -369,7 +370,7 @@ def uploadSASfile(request):
 def portfoliosModels(request):
     salida = pd.read_sql("select * from %stablaOpciones order by Portfolio, Parameter, Transformation, Differences, AR" %(schema),con)
     template = loader.get_template('portfoliosOptions.html')
-    return HttpResponse(template.render({'data':salida[["Portfolio","Parameter","Transformation","Differences","AR"]].to_html()},request))
+    return HttpResponse(template.render({'data':salida[["Portfolio","Parameter","Transformation","Differences","AR"]].to_html(), 'context':mainPersistence.getContext()},request))
 	
 @login_required(login_url='/login')
 def findModel(request):
@@ -378,7 +379,8 @@ def findModel(request):
     return HttpResponse(template.render({'data':salida.to_html(),'options1':mainPersistence.getOptions1(),
                                                                 'options2':mainPersistence.getOptions2(),
                                                                 'options3':mainPersistence.getOptions3(),
-                                                                'portfolios':mainPersistence.getPortfolios(),'findModelEnabled':True},request))
+                                                                'portfolios':mainPersistence.getPortfolios(),'findModelEnabled':True,
+                                                                'context':mainPersistence.getContext()},request))
 
 @login_required(login_url='/login')
 def refreshTable(request):
@@ -435,7 +437,7 @@ def refreshTable(request):
 @login_required(login_url='/login')
 def execution(request):
     
-    return render(request, 'execution.html', {'portfolios':mainPersistence.getPortfoliosSatus()})
+    return render(request, 'execution.html', {'portfolios':mainPersistence.getPortfoliosSatus(), 'context':mainPersistence.getContext()})
 
 @login_required(login_url='/login')
 def executePortfolio(request):
