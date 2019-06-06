@@ -74,6 +74,15 @@ class Persistencia:
         self.loadVarsOptions()
         self.availablePortfolios()
         self.loadScenarios()
+        self.loadContexts()
+
+    def loadContexts(self):
+        output1 = pd.read_sql("select context_name from %scontextlist order by context_name" %(schema),con)
+        self.contextList = list(output1["context_name"].values)
+        print(self.contextList)
+
+    def getContext(self):
+        return self.contextList
 
     def loadVarsOptions(self):
         print("Loading Options")
