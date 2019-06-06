@@ -255,7 +255,9 @@ function chartModel(targetModel){
 			  </button>
 			  <div class="dropdown-menu pre-scrollable">
 				<!-- Dropdown menu links -->
-				<span class="dropdown-item" onclick="changeValue( $('#context'), 'IFRS9 - 2019')">IFRS9 - 2019</span>
+				{% for i in context %}
+				<span class="dropdown-item" onclick="changeValue( $('#context'),'{{ i }}')">{{ i }}</span>
+				{% endfor %}
 			  </div>
 			</div>
 		</td>
