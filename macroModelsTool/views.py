@@ -74,7 +74,7 @@ class Persistencia:
         self.loadVarsOptions()
         self.availablePortfolios()
         self.loadScenarios()
-        self.loadContexts()
+        #self.loadContexts()
 
     def loadContexts(self):
         print("Loading Contexts")
