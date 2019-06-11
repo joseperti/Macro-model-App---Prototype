@@ -113,16 +113,16 @@ class Persistencia:
                 optionsPortfolio_ = []
             options_1 = output1[["First Group"]].values
             options_1 = list(set([k[0].encode("ascii") if k[0]!=None else k[0] for k in options_1]))
-            options_1.sort()
+            #options_1.sort()
             options_2 = output1[["Second Group"]].values
             options_2 = list(set([k[0].encode("ascii") if k[0]!=None else k[0] for k in options_2]))
-            options_2.sort()
+            #options_2.sort()
             options_3 = output1[["Third Group"]].values
             options_3 = list(set([k[0].encode("ascii") if k[0]!=None else k[0] for k in options_3]))
-            options_3.sort()
+            #options_3.sort()
             optionsPortfolio_ = output1[["Portfolio"]].values
             optionsPortfolio_ = list(set([k[0].encode("ascii") if k[0]!=None else k[0] for k in optionsPortfolio_]))
-            optionsPortfolio_.sort()
+            #optionsPortfolio_.sort()
             self.options1[c] = options_1
             self.options2[c] = options_2
             self.options3[c] = options_3
