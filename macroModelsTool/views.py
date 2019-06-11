@@ -32,6 +32,7 @@ from django.shortcuts import redirect
 import psycopg2 
 import io
 from sqlalchemy import event
+import datetime
 
 # To let long strings be represented
 pd.set_option("display.max_colwidth", 10000)
@@ -63,10 +64,10 @@ def loginAccess(request):
 class Persistencia:
     def __init__(self,connection=None):
         self.con = connection
+        self.loadContexts()
         self.loadVarsOptions()
         self.availablePortfolios()
         self.loadScenarios()
-        self.loadContexts()
 
     def loadContexts(self):
         print("Loading Contexts")
@@ -95,37 +96,70 @@ class Persistencia:
 
     def loadVarsOptions(self):
         print("Loading Options")
-        querySQLServer = "select distinct [First Group], [Second Group], [Third Group], Portfolio from tablaModelos"
-        queryPostgreSQL = 'select distinct `First Group`, `Second Group`, `Third Group`, Portfolio from %stablaModelos' %(schema)
-        output1 = pd.read_sql(queryPostgreSQL,con)
-        print(output1)
-        if output1.dropna(subset=['Portfolio']).size == 0:
-            print("No models obtained")
-            self.options1 = []
-            self.options2 = []
-            self.options3 = []
-            self.optionsPortfolio = []
-            return None
-        self.options1 = output1[["First Group"]].values
-        self.options1 = list(set([k[0].encode("ascii") if k[0]!=None else k[0] for k in self.options1]))
-        self.options1.sort()
-        self.options2 = output1[["Second Group"]].values
-        self.options2 = list(set([k[0].encode("ascii") if k[0]!=None else k[0] for k in self.options2]))
-        self.options2.sort()
-        self.options3 = output1[["Third Group"]].values
-        self.options3 = list(set([k[0].encode("ascii") if k[0]!=None else k[0] for k in self.options3]))
-        self.options3.sort()
-        self.optionsPortfolio = output1[["Portfolio"]].values
-        self.optionsPortfolio = list(set([k[0].encode("ascii") if k[0]!=None else k[0] for k in self.optionsPortfolio]))
-        self.optionsPortfolio.sort()
-        return None
+        self.options1 = dict()
+        self.options2 = dict()
+        self.options3 = dict()
+        self.optionsPortfolio = dict()
+        for c in self.getContext():
+            querySQLServer = "select distinct [First Group], [Second Group], [Third Group], Portfolio from tablaModelos"
+            queryPostgreSQL = 'select distinct `First Group`, `Second Group`, `Third Group`, Portfolio from %stablaModelos where `context`="%s"' %(schema, c)
+            output1 = pd.read_sql(queryPostgreSQL,con)
+            print(output1)
+            if output1.dropna(subset=['Portfolio']).size == 0:
+                print("No models obtained for %s" %(c))
+                options_1 = []
+                options_2 = []
+                options_3 = []
+                optionsPortfolio_ = []
+            options_1 = output1[["First Group"]].values
+            options_1 = list(set([k[0].encode("ascii") if k[0]!=None else k[0] for k in options_1]))
+            options_1.sort()
+            options_2 = output1[["Second Group"]].values
+            options_2 = list(set([k[0].encode("ascii") if k[0]!=None else k[0] for k in options_2]))
+            options_2.sort()
+            options_3 = output1[["Third Group"]].values
+            options_3 = list(set([k[0].encode("ascii") if k[0]!=None else k[0] for k in options_3]))
+            options_3.sort()
+            optionsPortfolio_ = output1[["Portfolio"]].values
+            optionsPortfolio_ = list(set([k[0].encode("ascii") if k[0]!=None else k[0] for k in optionsPortfolio_]))
+            optionsPortfolio_.sort()
+            self.options1[c] = options_1
+            self.options2[c] = options_2
+            self.options3[c] = options_3
+            self.optionsPortfolio[c] = optionsPortfolio_
 
-    def getOptions1(self):
-        return self.options1
-    def getOptions2(self):
-        return self.options2
-    def getOptions3(self):
-        return self.options3
+        del options_1
+        del options_2
+        del options_3
+        del optionsPortfolio_
+        return None
+    def getPortfolios(self, context="", request=None):
+        #print self.portfolios
+        if request != None:
+            context = self.getContextSession(request)
+        if context == "":
+            context = self.optionsPortfolio.keys()[0]
+        return self.optionsPortfolio[context]
+
+    def getOptions1(self, context="", request=None):
+        if request != None:
+            context = self.getContextSession(request)
+        if context == "":
+            context = self.options1.keys()[0]
+        print(self.options1[context])
+        return self.options1[context]
+    def getOptions2(self, context="", request=None):
+        if request != None:
+            context = self.getContextSession(request)
+        if context == "":
+            context = self.options2.keys()[0]
+        return self.options2[context]
+    def getOptions3(self, context="", request=None):
+        if request != None:
+            context = self.getContextSession(request)
+        if context == "":
+            context = self.options3.keys()[0]
+        return self.options3[context]
     '''We are trying to obtain into a class all the needed information for queries/time consuming purposes'''
     def availablePortfolios(self):
         print("Loading available Portfolios")
@@ -139,10 +173,6 @@ class Persistencia:
         portfoliosStatus = list(output1["status"].values)
         portfoliosKeys = list(output1["masterkey"].values)
         return zip(portfoliosKeys,portfoliosStatus)
-
-    def getPortfolios(self):
-        #print self.portfolios
-        return self.portfolios
 
     def loadScenarios(self):
         print("Loading Scenarios")
@@ -167,7 +197,7 @@ class Persistencia:
 pymysql.converters.encoders[np.float64] = pymysql.converters.escape_float
 pymysql.converters.conversions = pymysql.converters.encoders.copy()
 pymysql.converters.conversions.update(pymysql.converters.decoders)
-engine = create_engine('mysql+pymysql://epz3ofwjth0uo2nj:zmxob5delcmghi3g@j1r4n2ztuwm0bhh5.cbetxkdyhwsb.us-east-1.rds.amazonaws.com:3306/rnqd4v5frbs2v9rn')
+engine = create_engine('mysql+pymysql://epz3ofwjth0uo2nj:rwrv0fo3rkd4ce60@j1r4n2ztuwm0bhh5.cbetxkdyhwsb.us-east-1.rds.amazonaws.com:3306/rnqd4v5frbs2v9rn')
 con = engine.connect()
 mainPersistence = Persistencia(connection=con)
 
@@ -398,12 +428,12 @@ def portfoliosModels(request):
 	
 @login_required(login_url='/login')
 def findModel(request):
-    salida = pd.read_sql('select distinct `First Group`, `Second Group`, `Third Group` from %stablaModelos' %(schema),con)
+    salida = pd.read_sql('select distinct `First Group`, `Second Group`, `Third Group` from %stablaModelos where `context` = "%s"' %(schema, mainPersistence.getContextSession(request)),con)
     template = loader.get_template('portfoliosOptions.html')
-    responseInfo = {'data':salida.to_html(),'options1':mainPersistence.getOptions1(),
-                                                                'options2':mainPersistence.getOptions2(),
-                                                                'options3':mainPersistence.getOptions3(),
-                                                                'portfolios':mainPersistence.getPortfolios(),'findModelEnabled':True}
+    responseInfo = {'data':salida.to_html(),'options1':mainPersistence.getOptions1(request=request),
+                                                                'options2':mainPersistence.getOptions2(request=request),
+                                                                'options3':mainPersistence.getOptions3(request=request),
+                                                                'portfolios':mainPersistence.getPortfolios(request=request),'findModelEnabled':True}
     responseInfo.update(mainPersistence.getSessionInfo(request))
     return HttpResponse(template.render(responseInfo,request))
 
@@ -469,47 +499,57 @@ def execution(request):
 def executePortfolio(request):
     portfolioKey = request.GET.get("portfolio",None)
     print("Portfolio to queue %s" %(portfolioKey))
-    p = threading.Thread(target=executePortfolioConcurrent, args=(portfolioKey,))
+    p = threading.Thread(target=executePortfolioConcurrent, args=(portfolioKey,mainPersistence.getContextSession(request)))
     print("Starting Thread")
     p.start()
     return JsonResponse({"status":"Executing"})
 
-def executePortfolioConcurrent(portfolioKey):
+def executePortfolioConcurrent(portfolioKey, contextName):
     print("Portfolio selected = %s" %(portfolioKey))
-    output1 = pd.read_sql("select * from %stablaOpciones where masterkey='%s'" %(schema, portfolioKey),con)
+    # Configuration Part
+    numberOfAR = 2
+    portfolioKey = " Commercial - C&I LGDLogitdifQoQ AR1"
+    # usedVariables = ["GDPR_logdifa","Sovereign1yA","Sovereign1yA_difa","Unemployment","Unemployment_difa"]
+    usedVariables = ["GDPR_logdifQ","Sovereign1yA","Sovereign1yA_difa","Unemployment","Unemployment_difQ"]
+    transformation = "LogitDiff"
+    depVariable = "PD"
+    dependentVariableAnalysis = "%s_%s" %(depVariable, transformation)
+    output1 = pd.read_sql("select * from tablaOpciones where masterKey='%s'" %(portfolioKey),con)
     infoPortfolio = output1.iloc[0]
     portfolio = str(infoPortfolio["Portfolio"]).strip()
     parameter = infoPortfolio["Parameter"]
     transformation = infoPortfolio["Transformation"]
-    datosBase = mainPersistence.getScenario("Base")
+    datosBase = mainPersistence.getScenario(scenario="Base")
     listado = [["GDPR",1],
                ["Unemployment",1],
                 ["HPI",3],
                 ["OilPrices",3],
                 ["Sovereign1yA",2],
                 ["Sovereign10yA",2],
+                ["Sovereign1yQ",2],
+                ["Sovereign10yQ",2],
                 ["BBBSpread",2],
                 ["CRE",3],
                 ["PD_logit",4]]
 
     grupos = ["Listado de grupos",set([None]),set([None]),set([None]),set([None])]
     eliminar = ["_m1","_m2","_m3","_m4","_p1","_p2","_p3","_p4"]
-
-
-    permitido = ["GDPR_logdifa","BBBSpread","CRE_logdifa"]
-
     for k in datosBase.columns:
         for j in listado:
             if (j[0] in k):
                 for i in eliminar:
                     k = k.replace(i,"")
-                if k in permitido:
+                if k in usedVariables:
                     grupos[j[1]].add(k)
- 
     newDf = pd.DataFrame(mainPersistence.getScenario("Historic")[portfolio])
     newDf["PD_Logit"] = newDf[portfolio].apply(lambda x: math.log(x/(1-x)))
 
     datosBase["PD_Logit"] = newDf["PD_Logit"]
+    datosBase["PD_Logit_AR1"] = datosBase["PD_Logit"].shift(1)
+    datosBase["PD_LogitDiff"] = datosBase["PD_Logit"] - datosBase["PD_Logit_AR1"]
+    datosBase["PD_Logit_AR2"] = datosBase["PD_Logit"].shift(2)
+    datosBase["PD_LogitDiff_AR1"] = datosBase["PD_LogitDiff"].shift(1)
+    datosBase["PD_LogitDiff_AR2"] = datosBase["PD_LogitDiff"].shift(2)
     datosBase["PD"] = newDf[portfolio]
 
     dfg1 = pd.DataFrame({'key':[1 for k in range(len(grupos[1]))],'key1':[1 for k in range(len(grupos[1]))],"First Group":list(grupos[1])})
@@ -519,10 +559,8 @@ def executePortfolioConcurrent(portfolioKey):
     dfg3 = pd.DataFrame({'key':[1 for k in range(len(grupos[3]))],'key3':[1 for k in range(len(grupos[3]))],"Third Group":list(grupos[3])})
     dfg3.loc[dfg3["Third Group"].isnull(),["key3"]] = 0
     Aux1 = pd.merge(pd.merge(dfg1,dfg2,on='key'),dfg3, on='key')
-    dfAR = pd.DataFrame({'key':[1 for k in range(len(grupos[4]))],'key4':[1 for k in range(len(grupos[4]))],"AR Group":list(grupos[4])})
-    dfAR.loc[dfAR["AR Group"].isnull(),["key4"]] = 0
+    dfAR = pd.DataFrame({'key':[1 for k in range(len(grupos[4]))],"AR Group":numberOfAR})
     Aux1 = pd.merge(Aux1,dfAR, on='key')
-
     dfg1Ini = pd.DataFrame({'key1':[1 for k in range(5)]+[0],'lag_1Ini':[-2,-1,0,1,2,0]})
     dfg1Fin = pd.DataFrame({'key1':[1 for k in range(5)]+[0],'lag_1Fin':[-2,-1,0,1,2,0]})
     print('First group lagged defined')
@@ -532,37 +570,36 @@ def executePortfolioConcurrent(portfolioKey):
     dfg3Ini = pd.DataFrame({'key3':[1 for k in range(5)]+[0],'lag_3Ini':[-2,-1,0,1,2,0]})
     dfg3Fin = pd.DataFrame({'key3':[1 for k in range(5)]+[0],'lag_3Fin':[-2,-1,0,1,2,0]})
     print('Third group lagged defined')
-    dfARIni = pd.DataFrame({'key4':[1 for k in range(1)]+[0],'lag_ARIni':[0,0]})
-    dfARFin = pd.DataFrame({'key4':[1 for k in range(1)]+[0],'lag_ARFin':[0,0]})
-    print('AR group merged')
-    #Estamos intentando mergear para cosneguir las combinaciones de los modelos
 
+    print("length1: %s" %(len(Aux1)))
     Aux1 = pd.merge(Aux1,dfg1Ini,on='key1')
     Aux1 = pd.merge(Aux1,dfg1Fin,on='key1')
     print('First group merged')
+    print("length2: %s" %(len(Aux1)))
     Aux1 = pd.merge(Aux1,dfg2Ini,on='key2')
     Aux1 = pd.merge(Aux1,dfg2Fin,on='key2')
     print('Second group merged')
+    print("length3: %s" %(len(Aux1)))
     Aux1 = pd.merge(Aux1,dfg3Ini,on='key3')
     Aux1 = pd.merge(Aux1,dfg3Fin,on='key3')
     print('Third group merged')
-    Aux1 = pd.merge(Aux1,dfARIni,on='key4')
-    Aux1 = pd.merge(Aux1,dfARFin,on='key4')
-    print('AR group merged')
+    print("length4: %s" %(len(Aux1)))
     Aux1 = Aux1.loc[((Aux1['lag_1Fin'] >= Aux1['lag_1Ini']) | Aux1['First Group'].isnull())
                     & ((Aux1['lag_2Fin'] >= Aux1['lag_2Ini']) | Aux1['Second Group'].isnull())
-                   & ((Aux1['lag_3Fin'] >= Aux1['lag_3Ini']) | Aux1['Third Group'].isnull())
-                   & ((Aux1['lag_ARFin'] >= Aux1['lag_ARIni']) | Aux1['AR Group'].isnull())]
+                   & ((Aux1['lag_3Fin'] >= Aux1['lag_3Ini']) | Aux1['Third Group'].isnull())]
+    print("length6: %s" %(len(Aux1)))
     numeroVars = 16
     for k in range(0, numeroVars, 1):
         Aux1["Var"+str(k)] = ''
         Aux1["Coef"+str(k)] = ''
     Aux1 = Aux1.reset_index()
     model1 = None
-    query = "update %stablaOpciones set currentprocessed=0,  totaloptions=%s where masterkey='%s'" %(schema, str(len(Aux1.index)),portfolioKey)
+    query = "update tablaOpciones set currentProcessed=0,  totalOptions=%s where masterKey='%s'" %(str(len(Aux1.index)),portfolioKey)
     con.execute(query)
     print(query)
+
     def functioncilla(x):
+        global cleaned_data
         opciones = []
         if x["First Group"] != None:
             for k in range(x["lag_1Ini"],x["lag_1Fin"]+1,1):
@@ -588,16 +625,13 @@ def executePortfolioConcurrent(portfolioKey):
                     opciones.append(x["Third Group"]+"_p"+str(abs(k)))
                 else:
                     opciones.append(x["Third Group"])
-        if x["AR Group"] != None: 
-            for k in range(x["lag_ARIni"],x["lag_ARFin"]+1,1):
-                if k < 0:
-                    opciones.append(x["AR Group"]+"_m"+str(abs(k)))
-                elif k > 0:
-                    opciones.append(x["AR Group"]+"_p"+str(abs(k)))
-                else:
-                    opciones.append(x["AR Group"])
 
-        variables = ['PD_Logit'] + opciones
+        variables = [dependentVariableAnalysis] 
+        if numberOfAR>0:
+            opciones =  [dependentVariableAnalysis+"_AR1"] + opciones
+        if numberOfAR>1:
+            opciones =  [dependentVariableAnalysis+"_AR2"] + opciones
+        variables = variables + opciones
         #print(opciones)
         cleaned_data = datosBase.loc[:,variables].dropna()
         #print(cleaned_data)
@@ -611,54 +645,72 @@ def executePortfolioConcurrent(portfolioKey):
         if len(opciones) == 0:
             return x
         stringVars = variables[0] + " ~ " + " + ".join(opciones)
+        #print(stringVars)
         model1 = smf.ols(formula=stringVars,data=cleaned_data).fit()
         x["Var0"] = "Intercept"
         x["Coef0"] = model1.params["Intercept"]
         for k in range(1, len(opciones)+1, 1):
+            #print("Saving %s" %(opciones[k-1]))
             x["Var"+str(k)] = opciones[k-1]
             x["Coef"+str(k)] = model1.params[opciones[k-1]]
         x["AIC"] = model1.aic
         x["F-pvalue"] = model1.f_pvalue
         x["R2"] = model1.rsquared
         x["MSE"] = model1.mse_model
-        x["Transformation"] = "Logit"
+        x["Transformation"] = transformation
         x["Portfolio"] = portfolio
-        x["`context`"] = "IFRS9 2019"
+        x["context"] = contextName
 
-        print("%s - %s" %(portfolioKey,x.name))
-        print("Starting db copy")
-        #print(pd.DataFrame(x).to_sql(con=con, name='%stablaModelos' %(schema), if_exists='append'))
-        if int(x.name)%999 == 0:
+        #print("%s - %s" %(portfolioKey,x.name))
+
+        if int(x.name)%1000 == 0:
             print("%s Progress: %s" %(portfolio,str(x.name)))
-            con.execute("update %stablaOpciones set currentprocessed=%s where masterkey='%s'" %(schema,str(int(x.name)+1),portfolioKey))
+            #con.execute("update tablaOpciones set currentProcessed=%s where masterKey='%s'" %(str(int(x.name)+1),portfolioKey))
 
         return x
 
-    #def applyFunctioncilla(dataAux):
-    #    return pd.DataFrame(dataAux.apply(functioncilla, axis=1))
-
-    #Salida = parallelize_dataframe(Aux1, applyFunctioncilla)
-    salida = pd.DataFrame(Aux1[Aux1.index < 50].apply(functioncilla, axis=1))
-    #model1 = functioncilla(Aux1.iloc[0])
+    timeInit = datetime.datetime.now()
+    print(timeInit)
+    salida = pd.DataFrame(Aux1.apply(functioncilla, axis=1))
+    print("Total time: %s" %(datetime.datetime.now()-timeInit))
     query = "update %stablaOpciones set currentprocessed=%s,  totaloptions=%s where masterkey='%s'" %(schema, str(len(Aux1.index)),str(len(Aux1.index)),portfolioKey)
     con.execute(query)
     #query = "delete from %stablaModelos where masterkey ='%s'" %(schema, portfolioKey)
     #con.execute(query)
     # Only for PostgreSQL
-
     print(salida.to_sql(con=con, name='tablaModelos', if_exists='replace'))
     del Aux1
     mainPersistence.loadVarsOptions()
 
-def predict(coefs=None, years=50, transformation="", historic=None, scenarioData=None):
+
+
+def predict(coefs=None, years=7, transformation="", historic=None, scenarioData=None, portfolio="Commercial - C&I", minDate="2008-4Q"):
     output = []
     labels = []
     if (coefs is None or historic is None or scenarioData is None):
         return None
     print("Running Forecasting")
     scenarioData["Quarter"] = scenarioData.index
+    ar1 = 0.0
+    ar2 = 0.0
+    ar1Logit = 0.0
+    ar2Logit = 0.0
+    ar1Logitdiff = 0.0
+    ar2Logitdiff = 0.0
+    logdiff = 0.0
     for index, row in scenarioData.iterrows():
-        #print(index)
+        try:
+            historicPoint = historic.loc[historic.index==index,[portfolio]].values[0][0]
+            if math.isnan(historicPoint):
+                continue
+            historicPointLogit = math.log(historicPoint/(1-historicPoint))
+            logdiff = historicPointLogit-ar1Logit
+        except:
+            #print(ValueError)
+            historicPoint = float('NaN')
+            historicPointLogit = float('NaN')
+            logdiff = float('NaN')
+        #print("%s Historic Point=%s, Historic Point Logit=%s, AR1=%s, AR2=%s, AR1Logit=%s, AR2Logit=%s, logdiff=%s, ar1Logitdiff=%s, ar2LogitDiff=%s" %(index,historicPoint, historicPointLogit,ar1,ar2,ar1Logit,ar2Logit,logdiff,ar1Logitdiff,ar2Logitdiff))
         y = 0
         maxVars = 18
         for k in range(0,maxVars):
@@ -666,16 +718,43 @@ def predict(coefs=None, years=50, transformation="", historic=None, scenarioData
             if varName=="":
                 break
             coefficient = float(coefs.iloc[0]["Coef"+str(k)])
+            #print("Variable %s with coefficient %s" %(varName, coefficient))
             if varName=="Intercept":
-                y=y+coefficient
+                y= y+coefficient
                 continue
+            if varName[-3:-1]=="AR":
+                if transformation == "Logitdiff":
+                    if varName[-1:]=="1":
+                        y = y+ar1Logitdiff*coefficient
+                    if varName[-1:]=="2":
+                        y = y+ar2Logitdiff*coefficient
+                    continue
+
             y = y+(coefficient*float(scenarioData.loc[index,coefs.iloc[0]["Var"+str(k)]]))
         #print(y)
+        ar2 = ar1
+        ar2Logit = ar1Logit
+        ar2Logitdiff = ar1Logitdiff
+        if math.isnan(historicPoint):
+            ar1Logitdiff = 0.0
+            if transformation=="Logit":
+                ar1 = math.exp(y)/(1+math.exp(y))
+            elif transformation=="Logitdiff":
+                ar1 = math.exp(y+ar1Logit)/(1+math.exp(y+ar1Logit))
+            else:
+                ar1 = y
+            ar1Logit = math.log(ar1/(1-ar1))
+            ar1Logitdiff = ar1Logit - ar2Logit
+        else:
+            ar1 = historicPoint
+            ar1Logitdiff = historicPointLogit - ar1Logit
+            ar1Logit = historicPointLogit
+        if math.isnan(y) or len(output)>years*4 or index < minDate:
+            continue
+        print("Calculated value for period %s = %s" %(index, y))
         if transformation=="Logit":
             y=math.exp(y)/(1+math.exp(y))
             #print(y)
-        if math.isnan(y) or len(output)>90:
-            continue
             #output.append("")
         else:
             labels.append(row["Quarter"])
@@ -734,11 +813,11 @@ def modelProjection(request):
 
     portfolio = "SB - CF&A Secured"
     series = {}
-    series["Base"], labels = predict(coefs=salida,transformation="Logit",historic=mainPersistence.getScenario(scenario="Historic"),
+    series["Base"], labels = predict(coefs=salida,transformation="Logitdiff",historic=mainPersistence.getScenario(scenario="Historic"),
             scenarioData=mainPersistence.getScenario(scenario="Base"))
-    series["Base1"], labels = predict(coefs=salida,transformation="Logit",historic=mainPersistence.getScenario(scenario="Historic"),
+    series["Base1"], labels = predict(coefs=salida,transformation="Logitdiff",historic=mainPersistence.getScenario(scenario="Historic"),
             scenarioData=mainPersistence.getScenario(scenario="Base1"))
-    series["Base3"], labels = predict(coefs=salida,transformation="Logit",historic=mainPersistence.getScenario(scenario="Historic"),
+    series["Base3"], labels = predict(coefs=salida,transformation="Logitdiff",historic=mainPersistence.getScenario(scenario="Historic"),
             scenarioData=mainPersistence.getScenario(scenario="Base3"))
     series["Historical"] = labels
     #series["Historical"] = list(mainPersistence.getScenario(scenario="Base").index.values)
