@@ -57,11 +57,8 @@
 	}
 
 	#chartData{
-		overflow-y: hidden;
-	}
-
-	#chartData{
 		vertical-align: top;
+		overflow-y: hidden;
 	}
 	
 </style>
@@ -80,25 +77,27 @@
 	<div class="conntentTitle" style="cursor: pointer;" onclick="showModelOptions()">
 		Models
 	</div>
-	<div class="contentBody">
+	<div class="contentBody" style="min-height: 800px;">
 		<i class="fas fa-circle-notch fa-spin loading_symbol"></i>
 		<div class="bodyElement scrollbar style-7 scrollOption" id="targetDiv">
 		{{ data | safe }}
 		</div>
-		<div class="chartModel" id="" >
-						<canvas id="line-chart"></canvas>
-						<script>
-						$(".chartModel").hide();
-						$(".loading_symbol").hide();
-						</script>
-		</div>
-		<div class="bodyElement" id="chartData">
-			<table>
-				<tr>
-					<td id="chartData1"></td>
-					<td id="chartData2"></td>
-				</tr>
-			</table>
+		<div class="scrollbar style-7 scrollOption">
+			<div class="chartModel" id="" >
+							<canvas id="line-chart"></canvas>
+							<script>
+							$(".chartModel").hide();
+							$(".loading_symbol").hide();
+							</script>
+			</div>
+			<div class="bodyElement" id="chartData">
+				<table>
+					<tr>
+						<td id="chartData1"></td>
+						<td id="chartData2"></td>
+					</tr>
+				</table>
+			</div>
 		</div>
 	</div>
 </div>

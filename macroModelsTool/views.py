@@ -26,7 +26,7 @@ import numpy as np
 import threading
 import multiprocessing
 from multiprocessing import Pool
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 import psycopg2 
@@ -60,6 +60,10 @@ def loginAccess(request):
             print("No Authenticating credentials")
     template = loader.get_template('login.html')
     return HttpResponse(template.render({},request))
+
+def logoutAccess(request):
+    logout(request)
+    return redirect('/portal')
 
 class Persistencia:
     def __init__(self,connection=None):
@@ -163,13 +167,13 @@ class Persistencia:
     '''We are trying to obtain into a class all the needed information for queries/time consuming purposes'''
     def availablePortfolios(self):
         print("Loading available Portfolios")
-        output1 = pd.read_sql("select masterkey from %stablaOpciones order by masterkey" %(schema),con)
+        output1 = pd.read_sql("select masterkey from %scurrentModels order by masterkey" %(schema),con)
         self.portfolios = list(output1["masterkey"].values)
         # update [MIR_WS].[dbo].[tablaOpciones]
         # set masterKey = CONCAT([Portfolio], [Parameter], [Transformation], [Differences], ' AR', [AR])
-    def getPortfoliosSatus(self):
+    def getPortfoliosSatus(self, request=None):
         self.availablePortfolios()
-        output1 = pd.read_sql("select masterkey, CONCAT(currentprocessed,'/',totaloptions,' ',status) as status from %stablaOpciones order by masterkey" %(schema),con)
+        output1 = pd.read_sql("select masterkey, CONCAT(currentprocessed,'/',totaloptions,' ',status) as status from %scurrentModels where `context`='%s' order by masterkey" %(schema,self.getContextSession(request)),con)
         portfoliosStatus = list(output1["status"].values)
         portfoliosKeys = list(output1["masterkey"].values)
         return zip(portfoliosKeys,portfoliosStatus)
@@ -420,7 +424,7 @@ def uploadSASfile(request):
 	
 @login_required(login_url='/login')
 def portfoliosModels(request):
-    salida = pd.read_sql("select * from %stablaOpciones order by Portfolio, Parameter, Transformation, Differences, AR" %(schema),con)
+    salida = pd.read_sql("select * from %scurrentModels order by Portfolio, Parameter, Transformation, Differences, AR" %(schema),con)
     template = loader.get_template('portfoliosOptions.html')
     responseInfo = {'data':salida[["Portfolio","Parameter","Transformation","Differences","AR"]].to_html()}
     responseInfo.update(mainPersistence.getSessionInfo(request))
@@ -491,9 +495,10 @@ def refreshTable(request):
 
 @login_required(login_url='/login')
 def execution(request):
-    responseInfo = {'portfolios':mainPersistence.getPortfoliosSatus()}
+    responseInfo = {'portfolios':mainPersistence.getPortfoliosSatus(request=request)}
     responseInfo.update(mainPersistence.getSessionInfo(request))
     return render(request, 'execution.html', responseInfo)
+
 
 @login_required(login_url='/login')
 def executePortfolio(request):
@@ -514,7 +519,7 @@ def executePortfolioConcurrent(portfolioKey, contextName):
     transformation = "LogitDiff"
     depVariable = "PD"
     dependentVariableAnalysis = "%s_%s" %(depVariable, transformation)
-    output1 = pd.read_sql("select * from tablaOpciones where masterKey='%s'" %(portfolioKey),con)
+    output1 = pd.read_sql("select * from currentModels where masterKey='%s'" %(portfolioKey),con)
     infoPortfolio = output1.iloc[0]
     portfolio = str(infoPortfolio["Portfolio"]).strip()
     parameter = infoPortfolio["Parameter"]
@@ -594,7 +599,7 @@ def executePortfolioConcurrent(portfolioKey, contextName):
         Aux1["Coef"+str(k)] = ''
     Aux1 = Aux1.reset_index()
     model1 = None
-    query = "update tablaOpciones set currentProcessed=0,  totalOptions=%s where masterKey='%s'" %(str(len(Aux1.index)),portfolioKey)
+    query = "update currentModels set currentProcessed=0,  totalOptions=%s where masterKey='%s'" %(str(len(Aux1.index)),portfolioKey)
     con.execute(query)
     print(query)
 
@@ -673,7 +678,7 @@ def executePortfolioConcurrent(portfolioKey, contextName):
     print(timeInit)
     salida = pd.DataFrame(Aux1.apply(functioncilla, axis=1))
     print("Total time: %s" %(datetime.datetime.now()-timeInit))
-    query = "update %stablaOpciones set currentprocessed=%s,  totaloptions=%s where masterkey='%s'" %(schema, str(len(Aux1.index)),str(len(Aux1.index)),portfolioKey)
+    query = "update %scurrentModels set currentprocessed=%s,  totaloptions=%s where masterkey='%s'" %(schema, str(len(Aux1.index)),str(len(Aux1.index)),portfolioKey)
     con.execute(query)
     #query = "delete from %stablaModelos where masterkey ='%s'" %(schema, portfolioKey)
     #con.execute(query)
@@ -684,7 +689,8 @@ def executePortfolioConcurrent(portfolioKey, contextName):
 
 
 
-def predict(coefs=None, years=7, transformation="", historic=None, scenarioData=None, portfolio="Commercial - C&I", minDate="2008-4Q"):
+
+def predict(coefs=None, years=20, transformation="", historic=None, scenarioData=None, portfolio="Commercial - C&I", minDate="2009-1Q"):
     output = []
     labels = []
     if (coefs is None or historic is None or scenarioData is None):
@@ -735,6 +741,8 @@ def predict(coefs=None, years=7, transformation="", historic=None, scenarioData=
         ar2 = ar1
         ar2Logit = ar1Logit
         ar2Logitdiff = ar1Logitdiff
+        if math.isnan(y) or len(output)>years*4:
+            continue
         if math.isnan(historicPoint):
             ar1Logitdiff = 0.0
             if transformation=="Logit":
@@ -749,16 +757,20 @@ def predict(coefs=None, years=7, transformation="", historic=None, scenarioData=
             ar1 = historicPoint
             ar1Logitdiff = historicPointLogit - ar1Logit
             ar1Logit = historicPointLogit
-        if math.isnan(y) or len(output)>years*4 or index < minDate:
+        if index < minDate:
+            ar2Logit = 0.0
+            ar2LogitDiff = 0.0
             continue
-        print("Calculated value for period %s = %s" %(index, y))
-        if transformation=="Logit":
-            y=math.exp(y)/(1+math.exp(y))
+        #print("Calculated value for period %s = %s" %(index, y))
+        #if transformation=="Logit":
+        #    y=math.exp(y)/(1+math.exp(y))
+        #elif transformation=="Logitdiff":
+        #y=math.exp(y+ar1Logit)/(1+math.exp(y+ar1Logit))
             #print(y)
             #output.append("")
         else:
             labels.append(row["Quarter"])
-            output.append(round(y*100,2))
+            output.append(round(ar1*100,2))
     return output, labels
 
 def getStatistics(info):
@@ -820,11 +832,14 @@ def modelProjection(request):
     series["Base3"], labels = predict(coefs=salida,transformation="Logitdiff",historic=mainPersistence.getScenario(scenario="Historic"),
             scenarioData=mainPersistence.getScenario(scenario="Base3"))
     series["Historical"] = labels
+    historical = mainPersistence.getScenario(scenario="Historic")
+    series["Training"] = [round(x[0]*100,2) for x in historical.loc[historical.index.isin(labels),["Commercial - C&I"]].values.tolist()]
     #series["Historical"] = list(mainPersistence.getScenario(scenario="Base").index.values)
     #print(list(series["Base"].values))
     return JsonResponse({"Base":series["Base"],
                         "Base1":series["Base1"],
                         "Base3":series["Base3"],
                         "labels":series["Historical"],
+                        "Historical":series["Training"],
                         "statistics":getStatistics(salida.iloc[0]),
                         "coefficients":getCoefficients(salida.iloc[0])})

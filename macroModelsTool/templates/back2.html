@@ -76,6 +76,10 @@
 	/*
 	 *  STYLE 7
 	 */
+	.style-7{
+	 	overflow-y: scroll;
+	 	max-height: 600px;
+	}
 
 	.style-7::-webkit-scrollbar-track
 	{
@@ -99,6 +103,19 @@
 	   color-stop(0.44, rgba(200,200,200,1)),
 	   color-stop(0.86, rgba(0,26,72,0.3)));
 	}
+
+	.fas{
+		color: rgba(0,26,72,1);
+	}
+
+	.far{
+		margin-left: 20px;
+		font-size: 15px;
+		font-weight: bold;
+		color: rgba(31,114,68,1);
+		
+	}
+
 
 </style>
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
@@ -214,7 +231,13 @@ function chartModel(targetModel){
 						  type: 'line',
 						  data: {
 						  	labels:data["labels"],
-						    datasets: [{ 
+						    datasets: [
+						    { 
+						        data: data["Historical"],
+						        label: "Historical",
+						        borderColor: "rgb(0,119,255)",
+						        fill: false
+						      },{ 
 						        data: data["Base"],
 						        label: "Base",
 						        borderColor: "rgb(9,79,164)",
@@ -231,7 +254,7 @@ function chartModel(targetModel){
 						        label: "Base3 (Best)",
 						        borderColor: "rgb(247,137,59)",
 						        fill: false
-						      }
+						      }						      
 						    ]
 						  },
 						  options: {
@@ -256,7 +279,7 @@ function chartModel(targetModel){
 </script>
 </head>
 <body>
-<img class="logo1" src="{% static 'logo2.gif' %}">
+<a href='logout'><img class="logo1" src="{% static 'logo2.gif' %}"></a>
 <div class="superiorBar"/>
 <div class="menu">
 	<table>

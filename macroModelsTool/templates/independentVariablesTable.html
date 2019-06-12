@@ -38,7 +38,7 @@
 		<!-- Base -->
 		{% if existsBaseExcel == True %}
 		<div class="bodyElement">
-			<a href="BaseData"> Base (Baseline) Data <img width=30 src="{% static 'Excel-Icon.png' %}"/></a>
+			<a href="BaseData" title="Download"><img width=30 src="{% static 'Excel-Icon.png' %}"/> Base (Baseline) Data </a><a href="#" title="Analysis"><i class="far fa-chart-bar"></i></a>
 		</div>
 		{% else %}
 		<div class="bodyElement">
@@ -61,7 +61,7 @@
 	<!-- Base 1 -->
 		{% if existsBase1Excel == True %}
 		<div class="bodyElement">
-			<a href="Base1Data"> Base 1 (Best) Data <img width=30 src="{% static 'Excel-Icon.png' %}"/></a>
+			<a href="Base1Data"> Base 1 (Best) Data <img width=30 src="{% static 'Excel-Icon.png' %}"/></a><a href="#"><i class="far fa-chart-bar"></i></a>
 		</div>
 		{% else %}
 		<div class="bodyElement">
@@ -84,7 +84,7 @@
 		<!-- Base 2 -->
 		{% if existsBase2Excel == True %}
 		<div class="bodyElement">
-			<a href="Base2Data"> Base 2 (Pseudo-Base) Data <img width=30 src="{% static 'Excel-Icon.png' %}"/></a>
+			<a href="Base2Data"> Base 2 (Pseudo-Base) Data <img width=30 src="{% static 'Excel-Icon.png' %}"/></a><a href="#"><i class="far fa-chart-bar"></i></a>
 		</div>
 		{% else %}
 		<div class="bodyElement">
@@ -107,7 +107,7 @@
 		<!-- Base 3 -->
 		{% if existsBase3Excel == True %}
 		<div class="bodyElement">
-			<a href="Base3Data"> Base 3 (Worst) Data <img width=30 src="{% static 'Excel-Icon.png' %}"/></a>
+			<a href="Base3Data"><img width=30 src="{% static 'Excel-Icon.png' %}"/> Base 3 (Worst) Data </a><a href="#"><i class="far fa-chart-bar"></i></a>
 		</div>
 		{% else %}
 		<div class="bodyElement">
@@ -130,7 +130,7 @@
 		<!-- SAS (Severely Adverse Scenario) -->
 		{% if existsSASExcel == True %}
 		<div class="bodyElement">
-			<a href="SASData"> SAS (Severely Adverse Scenario) Data <img width=30 src="{% static 'Excel-Icon.png' %}"/></a>
+			<a href="SASData"> <img width=30 src="{% static 'Excel-Icon.png' %}"/> SAS (Severely Adverse Scenario) Data </a><a href="#"><i class="far fa-chart-bar"></i></a>
 		</div>
 		{% else %}
 		<div class="bodyElement">

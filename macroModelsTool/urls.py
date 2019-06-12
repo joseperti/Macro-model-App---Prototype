@@ -5,6 +5,7 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.portal),
+    url('logout', views.logoutAccess),
     url('login', views.loginAccess),
 	url('PDData',views.downloadPDData),
 	url('LGDData',views.downloadLGDData),
