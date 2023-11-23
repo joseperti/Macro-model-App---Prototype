@@ -2,10 +2,10 @@ django
 gunicorn
 django-heroku
 statsmodels
+numpy
 PyMySQL
 sqlalchemy
 pandas
 matplotlib
-numpy
-scipy==1.2
+scipy
 xlrd
