@@ -1,19 +1,4 @@
 ######################################################################################################################################################################
-#
-# `7MM"""Yp, `7MM"""Yp, `7MMF'   `7MF' db            .g8"""bgd `7MM"""YMM    .g8"""bgd `7MMF'          `7MMM.     ,MMF'                                  
-#   MM    Yb   MM    Yb   `MA     ,V  ;MM:         .dP'     `M   MM    `7  .dP'     `M   MM              MMMb    dPMM                                    
-#   MM    dP   MM    dP    VM:   ,V  ,V^MM.        dM'       `   MM   d    dM'       `   MM              M YM   ,M MM   ,6"Yb.  ,p6"bo `7Mb,od8 ,pW"Wq.  
-#   MM"""bg.   MM"""bg.     MM.  M' ,M  `MM        MM            MMmmMM    MM            MM              M  Mb  M' MM  8)   MM 6M'  OO   MM' "'6W'   `Wb 
-#   MM    `Y   MM    `Y     `MM A'  AbmmmqMA       MM.           MM   Y  , MM.           MM      ,       M  YM.P'  MM   ,pm9MM 8M        MM    8M     M8 
-#   MM    ,9   MM    ,9      :MM;  A'     VML      `Mb.     ,'   MM     ,M `Mb.     ,'   MM     ,M       M  `YM'   MM  8M   MM YM.    ,  MM    YA.   ,A9 
-# .JMMmmmd9  .JMMmmmd9        VF .AMA.   .AMMA.      `"bmmmd'  .JMMmmmmMMM   `"bmmmd'  .JMMmmmmMMM     .JML. `'  .JMML.`Moo9^Yo.YMbmd' .JMML.   `Ybmd9'  
-#
-# Author: BBVA GRM Analytics
-# Contact:
-# Date: 20180920
-# Notes:
-# Usage:
-#
 ######################################################################################################################################################################
 
 # PROGRESS BAR
@@ -70,13 +55,13 @@ library(strucchange)
 
 workingdir <- "C:/Users/xs15354/Desktop/Tool June 2019"
 #-------------------------------------
-wb_name = "BBVA CECL Macro Model Tool DS1.xlsm"
+wb_name = "Macro Model Tool DS1.xlsm"
 Sys.setenv(JAVA_HOME='C:/Program Files/Java/jre1.8.0_101/')
 
 setwd(workingdir)
 #getwd()
 ### - Activate workbook
-#wb_name = "BBVA CECL Macro Model Tool.xlsm"
+#wb_name = "CECL Macro Model Tool.xlsm"
 xls = xl.get.excel()
 xl.workbook.activate(wb_name)
 
@@ -559,12 +544,12 @@ dfa<-foreach(r=1:nray, .combine = 'rbind', .options.snow = opts ) %dopar% {
   if(max_neg>0){
     yname <- paste("Ym", 1:(as.numeric(max_neg)), sep="")
   }      else{yname="1"}
-  # Aqu�? hay que truncar data_lag_tot para que tenga para cada combinación de variables, el tamaño común de la muestra.
+  # AquÃ? hay que truncar data_lag_tot para que tenga para cada combinaciÃ³n de variables, el tamaÃ±o comÃºn de la muestra.
   # Por simplicidad voy a decir que sea:
-  # + el número de observaciones de la variable más corta
-  # - máximo número de lags
-  # - máximo número de leads
-  # As�? que voy a máximos, y luego me quedo con los datos utilizados para usar como muestra en el la segunda regresión buena.
+  # + el nÃºmero de observaciones de la variable mÃ¡s corta
+  # - mÃ¡ximo nÃºmero de lags
+  # - mÃ¡ximo nÃºmero de leads
+  # AsÃ? que voy a mÃ¡ximos, y luego me quedo con los datos utilizados para usar como muestra en el la segunda regresiÃ³n buena.
   
   #fmla_max <- as.formula(paste("Y ~ ", paste(c(xname1_max, xname2_max, xname3_max, yname), collapse= "+")))
   #model_max <- lm(fmla_max, data = data_lag_tot, na.action=na.exclude)
@@ -822,10 +807,10 @@ dfa<-foreach(r=1:nray, .combine = 'rbind', .options.snow = opts ) %dopar% {
 
   #U(4) Code
   
-  # En este punto en el data frame data_lag_tot está la muestra total de observaciones y lags para el actual modelo.
-  # Por como está construido, por arriba se pierden algunos leads, y por abajo algunos lags, pero no deber�?a importar porque la 
-  # regresión sólo se va a calcular sobre las l�?neas que tengan todos los valores disponibles.
-  # De esta muestra total hay que quedarnos sólo con las variables que vamos a utiizar, y sus lags/leads. 
+  # En este punto en el data frame data_lag_tot estÃ¡ la muestra total de observaciones y lags para el actual modelo.
+  # Por como estÃ¡ construido, por arriba se pierden algunos leads, y por abajo algunos lags, pero no deberÃ?a importar porque la 
+  # regresiÃ³n sÃ³lo se va a calcular sobre las lÃ?neas que tengan todos los valores disponibles.
+  # De esta muestra total hay que quedarnos sÃ³lo con las variables que vamos a utiizar, y sus lags/leads. 
   if (yname=="1"){
     var_tot <- c("Y", xname1, xname2, xname3)  
   }else{
@@ -838,13 +823,13 @@ dfa<-foreach(r=1:nray, .combine = 'rbind', .options.snow = opts ) %dopar% {
   three_na_check <- c(xname1, xname2, xname3)
   three_na_check <- three_na_check[three_na_check!='']
   
-  #----------------------------------------------Para de correr aqu�?
+  #----------------------------------------------Para de correr aquÃ?
   if(length(three_na_check)!=0){
 
     data_lag_tot_cleaned <- data_lag_tot[,colSums(is.na(data_lag_tot)) != nrow(data_lag_tot)]
     data_util <- data_lag_tot_cleaned[complete.cases(data_lag_tot_cleaned),var_tot]
     #data_util <- data_lag_tot[,var_tot]
-    #...y con esta quitamos las filas que tengan algún NA
+    #...y con esta quitamos las filas que tengan algÃºn NA
     #data_util <- data_util[complete.cases(data_util),]
     
     # Number of useful data. 
@@ -856,17 +841,17 @@ dfa<-foreach(r=1:nray, .combine = 'rbind', .options.snow = opts ) %dopar% {
     # Maximum size of training sample (in-the-sample)
     max_train_sample_length <- full_sample_length - num_predict
     
-    # Tamaño m�?nimo de la muestra (cualquier muestra). Viene limitado por el número de variables explicativas. Si el número de 
-    # observaciones es menor que el número de variables explicativas nos quedamos sin grados de libertad y la regresión da errores.
+    # TamaÃ±o mÃ?nimo de la muestra (cualquier muestra). Viene limitado por el nÃºmero de variables explicativas. Si el nÃºmero de 
+    # observaciones es menor que el nÃºmero de variables explicativas nos quedamos sin grados de libertad y la regresiÃ³n da errores.
     name_pred_variables <- c(xname1, xname2, xname3, yname)
     name_pred_variables <- name_pred_variables[name_pred_variables!='']
     num_pred_variables <- length(name_pred_variables)
     
-    min_train_sample_length <- num_pred_variables + 2 # Más dos para tener al menos un grado de libertad.
+    min_train_sample_length <- num_pred_variables + 2 # MÃ¡s dos para tener al menos un grado de libertad.
     
     is_possible <- TRUE
     if(min_train_sample_length>max_train_sample_length){
-      is_possible <- FALSE   # Si no hay suficientes observaciones con respecto al número de variables explicativas, se marca como modelo no posible y luego se representa
+      is_possible <- FALSE   # Si no hay suficientes observaciones con respecto al nÃºmero de variables explicativas, se marca como modelo no posible y luego se representa
     }
     
     # Once we know the length of TRAIN y AB, we create the lists with the data. 
@@ -883,14 +868,14 @@ dfa<-foreach(r=1:nray, .combine = 'rbind', .options.snow = opts ) %dopar% {
     # +----------------------------------+---------+------------------------+----------------+
     #
     # T&F es para pasada, la submuestra que se va a usar para obtener los coeficientes del modelo.
-    # B son los valores macroeconónimos que se van a usar para estimar A, con los coeficientes obtenidos de T&F.
+    # B son los valores macroeconÃ³nimos que se van a usar para estimar A, con los coeficientes obtenidos de T&F.
     # A son las 12 predicciones que hay que hacer con los coeficientes obtenidos de T&F aplicados sobre los datos de B y C.
     # C son los lags de Y utilizados para estimar A. Estos lags, a partir del primero, son desconocidos (obviamente), y 
     #   deben ser actualizados uno a uno conforme se van calculando las predicciones de A.
-    #   NOTA: En una fase preliminar de la herramienta se va a calcular A aplicando los coeficientes a los C conocidos, a modo de aproximación.
-    #         Una vez esté hecho as�?, se hará el cálculo más fino, con 12 pasadas, y actualizando C con cada una. <YA ESTÁ HECHO>
+    #   NOTA: En una fase preliminar de la herramienta se va a calcular A aplicando los coeficientes a los C conocidos, a modo de aproximaciÃ³n.
+    #         Una vez estÃ© hecho asÃ?, se harÃ¡ el cÃ¡lculo mÃ¡s fino, con 12 pasadas, y actualizando C con cada una. <YA ESTÃ HECHO>
     
-    # Creamos tres matrices vac�?as del tamaño necesario para ir almacenando en cada pasada A_pred, A_obs y A_naive_pred.
+    # Creamos tres matrices vacÃ?as del tamaÃ±o necesario para ir almacenando en cada pasada A_pred, A_obs y A_naive_pred.
     
     if(is_possible){
        
@@ -1052,7 +1037,7 @@ dfa<-foreach(r=1:nray, .combine = 'rbind', .options.snow = opts ) %dopar% {
         Y_trans_obs_v <- c(Y_trans_head_i,A_obs)
         Y_trans_pred_vi <- c(Y_trans_head_i,A_pred)
         
-        # Hay que encontrar el número máximo de lags y añadirle 4 (en caso de trimestres) o 1 (en caso de anual).
+        # Hay que encontrar el nÃºmero mÃ¡ximo de lags y aÃ±adirle 4 (en caso de trimestres) o 1 (en caso de anual).
         lag_y <- dfch[1,3]
         if((!is.na(dfch[1,5]) & dfch[1,5]!='NaN')){lag_x1 <- 0-as.numeric(dfch[1,5])} else {lag_x1 <- 0}
         if((!is.na(dfch[1,8]) & dfch[1,8]!='NaN')){lag_x2 <- 0-as.numeric(dfch[1,8])} else {lag_x2 <- 0}
@@ -1131,7 +1116,7 @@ xl.sheet.activate('SS2.Models')
 rng = xls[["Activesheet"]]$Cells(2,1)
 xl.write(df, xl.rng = rng, row.names = FALSE, col.names = TRUE)
 
-# Ahora hay que coger de la tabla de modelos generada, para cada combinación de variables, la combinación de lags que tenga el top menor AIC y cuyas variables principales tengan
+# Ahora hay que coger de la tabla de modelos generada, para cada combinaciÃ³n de variables, la combinaciÃ³n de lags que tenga el top menor AIC y cuyas variables principales tengan
 # p-valor menor al valor indicado
 # Candidate Models. A2.
 setWinProgressBar(pb, 95, label='Selecting Better Combination') 
